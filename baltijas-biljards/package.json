@@ -1,0 +1,15 @@
+{
+  "name": "baltijas-biljards",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Baltijas Biljards Nr.1 — website with hidden admin panel",
+  "scripts": {
+    "build": "node build.js",
+    "start": "node server/local.mjs",
+    "dev": "node build.js && node server/local.mjs"
+  },
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "@netlify/blobs": "^8.0.0"
+  }
+}
