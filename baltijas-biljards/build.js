@@ -223,7 +223,7 @@ function shell(page, body) {
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>${title}</title>
 <meta name="description" content="${desc}">
-<meta name="theme-color" content="${THEME === 'light' ? '#ffffff' : '#0a2b1f'}">
+<meta name="theme-color" content="${THEME === 'light' ? '#ffffff' : '#000000'}">
 <meta name="color-scheme" content="${THEME}">
 <meta property="og:type" content="website">
 <meta property="og:title" content="${title}">
@@ -331,17 +331,8 @@ pages.push({
   id: 'index', file: 'index.html',
   body: () => `
 <section class="splash" aria-label="${SITE.name}">
-  <div class="splash__in">
-    <div class="hero-logo hero-logo--img hero-logo--badge splash__logo" data-logo>${HAS_LOGO ? `<img src="assets/img/logo.jpg" alt="${lv('logo.alt')}" data-i18n-alt="logo.alt" width="900" height="900" decoding="async" fetchpriority="high">` : emblem(160)}</div>
-    <div class="hero__actions">
-      ${btn('tel:' + SITE.tel, 'cta.book', 'primary')}
-      ${textLink('kontakti.html', 'home.where')}
-    </div>
-  </div>
-</section>
-
-<section class="hero hero--text">
-  <div class="container hero__in">
+  <div class="splash__bg hero-logo--img" data-logo>${HAS_LOGO ? `<img src="assets/img/logo.jpg" alt="${lv('logo.alt')}" data-i18n-alt="logo.alt" width="900" height="900" decoding="async" fetchpriority="high">` : ''}</div>
+  <div class="container splash__in">
     ${el('p', 'home.eyebrow', 'eyebrow reveal')}
     ${el('h1', 'home.h1', 'display reveal')}
     ${el('p', 'home.lead', 'lead reveal')}
@@ -350,6 +341,9 @@ pages.push({
       ${textLink('kontakti.html', 'home.where')}
     </div>
   </div>
+</section>
+
+<section class="hero hero--frame">
   <div class="frame" data-frame>
     ${ph('home.hero', 'frame__in', '', 'data-parallax')}
     <div class="callout">
