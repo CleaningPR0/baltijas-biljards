@@ -110,6 +110,9 @@ const ICON = {
 // Site theme: 'dark' (default, requested by the club) or 'light'. Override: THEME=light node build.js
 const THEME = process.env.THEME === 'light' ? 'light' : 'dark';
 let gid = 0;
+const HAS_LOGO = fs.existsSync(path.join(ROOT, 'assets/img/logo.jpg'));
+const BUILD = Date.now().toString(36);
+const brandMark = (size) => HAS_LOGO ? `<img class="brand__logo" src="assets/img/logo.jpg" alt="" width="${size}" height="${size}">` : emblem(size);
 function emblem(size = 34) {
   return `<svg class="emblem" width="${size}" height="${size}" viewBox="0 0 48 48" aria-hidden="true">
   <circle cx="24" cy="24" r="22.5" fill="currentColor"/>
@@ -158,7 +161,7 @@ function header(page) {
   return `<a class="skip" href="#main" data-i18n="skip">${lv('skip')}</a>
 <header class="site-header" id="top">
   <div class="bar">
-    <a class="brand" data-admin-trigger href="index.html" aria-label="${SITE.name}">${emblem(30)}<span class="brand__name">Baltijas Biljards<small>NR.1</small></span></a>
+    <a class="brand" data-admin-trigger href="index.html" aria-label="${SITE.name}">${brandMark(34)}<span class="brand__name">Baltijas Biljards<small>NR.1</small></span></a>
     <nav class="nav" id="nav" aria-label="Main">
       ${links}
       <a class="nav__cta btn btn--primary" href="tel:${SITE.tel}" data-i18n="cta.book">${lv('cta.book')}</a>
@@ -182,7 +185,7 @@ function footer() {
   <div class="container">
     <div class="foot">
       <div class="foot__brand">
-        <a class="brand" href="index.html" aria-label="${SITE.name}">${emblem(34)}<span class="brand__name">Baltijas Biljards<small>NR.1</small></span></a>
+        <a class="brand" href="index.html" aria-label="${SITE.name}">${brandMark(38)}<span class="brand__name">Baltijas Biljards<small>NR.1</small></span></a>
         ${el('p', 'foot.about', 'foot__about')}
       </div>
       <div class="foot__col"><h3 data-i18n="foot.club">${lv('foot.club')}</h3><ul>${nav('tables', 'galdi.html')}${nav('prices', 'cenas.html')}${nav('hall', 'zale.html')}${nav('gallery', 'galerija.html')}</ul></div>
@@ -231,7 +234,7 @@ ${canon}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/style.css?v=${BUILD}">
 <script>document.documentElement.classList.add('js')</script>
 ${ld}
 </head>
@@ -241,9 +244,9 @@ ${header(page)}
 ${body}
 </main>
 ${footer()}
-<script src="assets/js/i18n-data.js"></script>
-<script src="assets/js/main.js"></script>
-<script src="assets/js/content.js"></script>
+<script src="assets/js/i18n-data.js?v=${BUILD}"></script>
+<script src="assets/js/main.js?v=${BUILD}"></script>
+<script src="assets/js/content.js?v=${BUILD}"></script>
 </body>
 </html>
 `;
@@ -327,9 +330,18 @@ const pages = [];
 pages.push({
   id: 'index', file: 'index.html',
   body: () => `
-<section class="hero">
+<section class="splash" aria-label="${SITE.name}">
+  <div class="splash__in">
+    <div class="hero-logo hero-logo--img hero-logo--badge splash__logo" data-logo>${HAS_LOGO ? `<img src="assets/img/logo.jpg" alt="${lv('logo.alt')}" data-i18n-alt="logo.alt" width="900" height="900" decoding="async" fetchpriority="high">` : emblem(160)}</div>
+    <div class="hero__actions">
+      ${btn('tel:' + SITE.tel, 'cta.book', 'primary')}
+      ${textLink('kontakti.html', 'home.where')}
+    </div>
+  </div>
+</section>
+
+<section class="hero hero--text">
   <div class="container hero__in">
-    <div class="hero-logo reveal${fs.existsSync(path.join(ROOT, 'assets/img/logo.jpg')) ? ' hero-logo--img hero-logo--badge' : ''}" data-logo>${fs.existsSync(path.join(ROOT, 'assets/img/logo.jpg')) ? `<img src="assets/img/logo.jpg" alt="${lv('logo.alt')}" data-i18n-alt="logo.alt" width="900" height="900" decoding="async">` : emblem(96)}</div>
     ${el('p', 'home.eyebrow', 'eyebrow reveal')}
     ${el('h1', 'home.h1', 'display reveal')}
     ${el('p', 'home.lead', 'lead reveal')}
