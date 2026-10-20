@@ -36,6 +36,7 @@
       im.removeAttribute('onerror');
       im.src = url;
     });
+    if (slots && slots.logo) document.querySelectorAll('.brand__logo').forEach(function (i) { i.src = slots.logo; });
     var logo = document.querySelector('[data-logo]');
     if (logo && slots && slots.logo) {
       logo.classList.add('hero-logo--img');

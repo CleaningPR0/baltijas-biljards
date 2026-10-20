@@ -84,13 +84,14 @@
       if (loading) return;
       loading = true;
       var css = document.createElement('link');
-      css.rel = 'stylesheet'; css.href = 'assets/css/admin.css';
+      var v = (document.currentScript && 0) || (function () { var sc = document.querySelector('script[src*="main.js"]'); var q = sc && /\?v=[^&]+/.exec(sc.src); return q ? q[0] : ''; })();
+      css.rel = 'stylesheet'; css.href = 'assets/css/admin.css' + v;
       document.head.appendChild(css);
       var s1 = document.createElement('script');
-      s1.src = 'assets/js/defaults.js';
+      s1.src = 'assets/js/defaults.js' + v;
       s1.onload = function () {
         var s2 = document.createElement('script');
-        s2.src = 'assets/js/admin.js';
+        s2.src = 'assets/js/admin.js' + v;
         s2.onload = function () { loading = false; cb(); };
         document.body.appendChild(s2);
       };
