@@ -126,6 +126,7 @@
     Object.keys(content.slots || {}).forEach(function (k) { if (content.slots[k] === url) found = true; });
     (content.products || []).forEach(function (p) { if (p.img === url) found = true; });
     (content.gallery || []).forEach(function (g) { if (g.img === url) found = true; });
+    (content.news || []).forEach(function (n) { if (n.img === url) found = true; });
     return found;
   }
   function releaseLater(url) { if (isOwn(url)) pendingDeletes.push(url); }
@@ -149,6 +150,7 @@
       if (content.products) payload.products = content.products;
       if (content.gallery) payload.gallery = content.gallery;
       if (content.prices) payload.prices = content.prices;
+      ['news', 'tournaments', 'rules'].forEach(function (k) { if (content[k]) payload[k] = content[k]; });
       var r = await api('/admin/content', { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
       content.rev = r.rev;
       setStatus('Сохранено ✓', 'ok');
@@ -227,7 +229,7 @@
       LANGS.map(function (l) {
         return h('button', { type: 'button', 'data-l': l[0], class: l[0] === editLang ? 'is-on' : '', onclick: function () { editLang = l[0]; langBar.querySelectorAll('button').forEach(function (b) { b.classList.toggle('is-on', b.getAttribute('data-l') === editLang); }); renderTab(); } }, l[1]);
       }));
-    var tabs = [['photos', 'Фото'], ['shop', 'Магазин'], ['gallery', 'Галерея'], ['prices', 'Прайс-лист'], ['settings', 'Настройки']];
+    var tabs = [['photos', 'Фото'], ['news', 'Новости'], ['tournaments', 'Турниры'], ['rules', 'Правила'], ['shop', 'Магазин'], ['gallery', 'Галерея'], ['prices', 'Прайс-лист'], ['settings', 'Настройки']];
     var side = h('nav', { class: 'bba-side' }, tabs.map(function (t) {
       return h('button', { type: 'button', 'data-t': t[0], class: 'bba-tab' + (t[0] === tab ? ' is-on' : ''), onclick: function () { tab = t[0]; side.querySelectorAll('.bba-tab').forEach(function (b) { b.classList.toggle('is-on', b.getAttribute('data-t') === tab); }); renderTab(); } }, t[1]);
     }));
@@ -257,7 +259,7 @@
     if (!mainEl) return;
     var st = mainEl.scrollTop;
     mainEl.innerHTML = '';
-    ({ photos: renderPhotos, shop: renderShop, gallery: renderGallery, prices: renderPrices, settings: renderSettings })[tab](mainEl);
+    ({ photos: renderPhotos, news: renderNews, tournaments: renderTournaments, rules: renderRules, shop: renderShop, gallery: renderGallery, prices: renderPrices, settings: renderSettings })[tab](mainEl);
     mainEl.scrollTop = st;
   }
 
@@ -284,7 +286,7 @@
   function langInput(obj, key, o) {
     o = o || {};
     obj[key] = obj[key] || { lv: '', ru: '', en: '' };
-    var el = h(o.area ? 'textarea' : 'input', { class: 'bba-in', type: o.area ? null : 'text', rows: o.area ? 4 : null, maxlength: o.max || 200, placeholder: editLang === 'lv' ? (o.ph || '') : (obj[key].lv || o.ph || '') });
+    var el = h(o.area ? 'textarea' : 'input', { class: 'bba-in', type: o.area ? null : 'text', rows: o.area ? (o.rows || 4) : null, maxlength: o.max || 200, placeholder: editLang === 'lv' ? (o.ph || '') : (obj[key].lv || o.ph || '') });
     el.value = obj[key][editLang] || '';
     el.addEventListener('input', function () { obj[key][editLang] = el.value; if (o.onchange) o.onchange(); else scheduleSave(); });
     return el;
@@ -507,6 +509,104 @@
       groups.push({ id: rid('g'), vip: false, title: { lv: '', ru: '', en: '' }, note: { lv: '', ru: '', en: '' }, rows: [{ id: rid('r'), label: { lv: '', ru: '', en: '' }, price: '', unit: { lv: '', ru: '', en: '' } }] });
       scheduleSave(); renderTab();
     } }, '+ Добавить группу'));
+  }
+
+
+  /* ---------- shared helpers for list tabs ---------- */
+  var E3 = function () { return { lv: '', ru: '', en: '' }; };
+  function ensureList(key) { if (!Array.isArray(content[key])) content[key] = clone(D[key] || []); return content[key]; }
+  function orderBtns(list, i) {
+    return [
+      h('button', { type: 'button', class: 'bba-btn bba-btn--ghost bba-btn--sm', disabled: i === 0, title: 'Выше', onclick: function () { list.splice(i - 1, 0, list.splice(i, 1)[0]); scheduleSave(); renderTab(); } }, '↑'),
+      h('button', { type: 'button', class: 'bba-btn bba-btn--ghost bba-btn--sm', disabled: i === list.length - 1, title: 'Ниже', onclick: function () { list.splice(i + 1, 0, list.splice(i, 1)[0]); scheduleSave(); renderTab(); } }, '↓')
+    ];
+  }
+  function plainInput(obj, key, o) {
+    o = o || {};
+    var el = h('input', { class: 'bba-in' + (o.auto ? ' bba-in--auto' : ''), type: o.type || 'text', maxlength: o.max || 300, placeholder: o.ph || '' });
+    el.value = obj[key] || '';
+    el.addEventListener('input', function () { obj[key] = el.value; scheduleSave(); });
+    return el;
+  }
+  function field(label, node) { return h('label', { class: 'bba-field' }, h('span', { text: label }), node); }
+
+  /* ---------- tab: news ---------- */
+  var NEWS_CATS = [['club', 'Клуб'], ['tournaments', 'Турниры'], ['school', 'Школа'], ['shop', 'Магазин']];
+  function renderNews(main) {
+    var list = ensureList('news');
+    append(main, h('h2', { class: 'bba-h1', text: 'Новости' }));
+    append(main, h('p', { class: 'bba-hint', text: 'Посты показываются на странице «Jaunumi» и на главной. Новые идут по дате — самые свежие сверху. Текст пишется на трёх языках: переключайте LV / RU / EN вверху.' }));
+    append(main, h('div', { class: 'bba-bar' }, h('button', { type: 'button', class: 'bba-btn bba-btn--primary', onclick: function () {
+      list.unshift({ id: rid('n'), date: new Date().toISOString().slice(0, 10), cat: 'club', title: E3(), text: E3(), img: '' });
+      scheduleSave(); renderTab();
+    } }, '+ Новый пост')));
+    if (!list.length) append(main, h('p', { class: 'bba-empty', text: 'Постов нет. Нажмите «Новый пост».' }));
+    list.forEach(function (n, i) {
+      var cat = h('select', { class: 'bba-in bba-in--auto', onchange: function () { n.cat = cat.value; scheduleSave(); } }, NEWS_CATS.map(function (c) { return h('option', { value: c[0], text: c[1] }); }));
+      cat.value = n.cat || 'club';
+      append(main, h('section', { class: 'bba-group bba-post' },
+        h('div', { class: 'bba-post__img' },
+          h('div', { class: 'bba-thumb bba-thumb--sm' }, n.img ? h('img', { src: n.img, alt: '' }) : emptyImg()),
+          h('div', { class: 'bba-row' },
+            fileButton(n.img ? 'Заменить фото' : 'Загрузить фото', guard(function (files) {
+              return uploadImage(files[0], { maxSide: 1600 }).then(function (u) { releaseLater(n.img); n.img = u; scheduleSave(); renderTab(); });
+            }), { small: true }),
+            n.img ? h('button', { type: 'button', class: 'bba-btn bba-btn--ghost bba-btn--sm', onclick: function () { releaseLater(n.img); n.img = ''; scheduleSave(); renderTab(); } }, 'Убрать') : null)),
+        h('div', { class: 'bba-form' },
+          h('div', { class: 'bba-row' }, field('Дата', plainInput(n, 'date', { type: 'date', auto: true })), field('Раздел', cat)),
+          field('Заголовок', langInput(n, 'title', { max: 160, ph: 'Заголовок' })),
+          field('Текст', langInput(n, 'text', { max: 3000, area: true, rows: 6, ph: 'Текст поста' })),
+          h('div', { class: 'bba-row bba-row--end' }, orderBtns(list, i),
+            h('button', { type: 'button', class: 'bba-btn bba-btn--danger bba-btn--sm', onclick: function () {
+              if (!confirm('Удалить этот пост?')) return;
+              releaseLater(n.img); list.splice(i, 1); scheduleSave(); renderTab();
+            } }, 'Удалить')))));
+    });
+  }
+
+  /* ---------- tab: tournaments ---------- */
+  function renderTournaments(main) {
+    var list = ensureList('tournaments');
+    append(main, h('h2', { class: 'bba-h1', text: 'Турниры' }));
+    append(main, h('p', { class: 'bba-hint', text: 'Каждый турнир показывается на странице «Turnīri»: дата, положение о турнире и кнопка «Регистрация» со ссылкой на TournamentService. Прошедшие турниры автоматически уходят вниз и тускнеют.' }));
+    append(main, h('div', { class: 'bba-bar' }, h('button', { type: 'button', class: 'bba-btn bba-btn--primary', onclick: function () {
+      list.unshift({ id: rid('t'), date: '', time: '', title: E3(), info: E3(), link: '' });
+      scheduleSave(); renderTab();
+    } }, '+ Добавить турнир')));
+    if (!list.length) append(main, h('p', { class: 'bba-empty', text: 'Турниров нет. Нажмите «Добавить турнир».' }));
+    list.forEach(function (t, i) {
+      append(main, h('section', { class: 'bba-group' },
+        h('div', { class: 'bba-row' }, field('Дата', plainInput(t, 'date', { type: 'date', auto: true })), field('Время / место (необязательно)', plainInput(t, 'time', { max: 40, ph: 'Напр. 12:00' }))),
+        field('Название турнира', langInput(t, 'title', { max: 160, ph: 'Название' })),
+        field('Положение о турнире (формат, взнос, призы, дисциплина)', langInput(t, 'info', { max: 4000, area: true, rows: 7, ph: 'Положение о турнире' })),
+        field('Ссылка на турнир в TournamentService (регистрация)', plainInput(t, 'link', { max: 300, ph: 'https://tournamentservice.net/…' })),
+        h('div', { class: 'bba-row bba-row--end' }, orderBtns(list, i),
+          h('button', { type: 'button', class: 'bba-btn bba-btn--danger bba-btn--sm', onclick: function () {
+            if (!confirm('Удалить этот турнир?')) return;
+            list.splice(i, 1); scheduleSave(); renderTab();
+          } }, 'Удалить'))));
+    });
+  }
+
+  /* ---------- tab: rules ---------- */
+  function renderRules(main) {
+    var list = ensureList('rules');
+    append(main, h('h2', { class: 'bba-h1', text: 'Правила' }));
+    append(main, h('p', { class: 'bba-hint', text: 'Разделы страницы «Noteikumi». Строки, начинающиеся с «- », превращаются в список. Раздел без текста и без ссылки на сайте не показывается — так можно заранее держать пустые «ЕКП» и «МКП» и заполнить позже. Ссылка (необязательно) — на PDF или страницу с официальным документом.' }));
+    append(main, h('div', { class: 'bba-bar' }, h('button', { type: 'button', class: 'bba-btn bba-btn--primary', onclick: function () {
+      list.push({ id: rid('r'), title: E3(), body: E3(), link: '' }); scheduleSave(); renderTab();
+    } }, '+ Добавить раздел')));
+    list.forEach(function (r, i) {
+      append(main, h('section', { class: 'bba-group' },
+        field('Название раздела', langInput(r, 'title', { max: 100, ph: 'Название' })),
+        field('Текст', langInput(r, 'body', { max: 12000, area: true, rows: 10, ph: 'Текст правил' })),
+        field('Ссылка на документ (необязательно)', plainInput(r, 'link', { max: 300, ph: 'https://…' })),
+        h('div', { class: 'bba-row bba-row--end' }, orderBtns(list, i),
+          h('button', { type: 'button', class: 'bba-btn bba-btn--danger bba-btn--sm', onclick: function () {
+            if (!confirm('Удалить раздел?')) return;
+            list.splice(i, 1); scheduleSave(); renderTab();
+          } }, 'Удалить'))));
+    });
   }
 
   /* ---------- tab: settings ---------- */

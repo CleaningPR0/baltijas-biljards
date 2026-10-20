@@ -86,6 +86,10 @@ function imgUrl(v) {
   return v && !v.includes('..') && IMG_OK.test(v) ? v : '';
 }
 
+const linkUrl = (v) => { v = clean(v, 300); return /^https?:\/\/[^\s<>"']+$/i.test(v) ? v : ''; };
+const dateOf = (v) => { v = clean(v, 10); return /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : ''; };
+const NEWS_CATS = ['club', 'tournaments', 'school', 'shop'];
+
 export function sanitize(input) {
   const out = {};
   if (input && typeof input.slots === 'object' && input.slots) {
@@ -114,6 +118,23 @@ export function sanitize(input) {
         })),
       })),
     };
+  }
+  if (Array.isArray(input?.news)) {
+    out.news = input.news.slice(0, 300).map((n) => ({
+      id: idOf(n?.id), date: dateOf(n?.date), cat: NEWS_CATS.includes(n?.cat) ? n.cat : 'club',
+      title: tri(n?.title, 160), text: tri(n?.text, 3000), img: imgUrl(n?.img),
+    }));
+  }
+  if (Array.isArray(input?.tournaments)) {
+    out.tournaments = input.tournaments.slice(0, 200).map((t) => ({
+      id: idOf(t?.id), date: dateOf(t?.date), time: clean(t?.time, 40),
+      title: tri(t?.title, 160), info: tri(t?.info, 4000), link: linkUrl(t?.link),
+    }));
+  }
+  if (Array.isArray(input?.rules)) {
+    out.rules = input.rules.slice(0, 40).map((r) => ({
+      id: idOf(r?.id), title: tri(r?.title, 100), body: tri(r?.body, 12000), link: linkUrl(r?.link),
+    }));
   }
   if (input?.hours && typeof input.hours === 'object') out.hours = tri(input.hours, 600);
   return out;

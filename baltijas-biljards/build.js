@@ -4,6 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const D = require('./i18n-source.js');
+const RULES = require('./rules-defaults.js');
 
 const ROOT = __dirname;
 const OUT = path.join(ROOT, 'dist');
@@ -30,7 +31,7 @@ const SITE = {
 const REF = 'https://baltijas-biljards-nr1.vercel.app/assets/img/';
 const REMOTE_EXT = (n) => (n.startsWith('shop/') ? '.webp' : '.jpg');
 const SLOTS = [
-  ['logo', 'Логотип — главная страница', null],
+  ['logo', 'Логотип — главная страница', 'logo'],
   ['home.hero', 'Главная — большое фото', 'hero-1'],
   ['home.pyramid', 'Главная — карточка «Пирамида»', 'club-4'],
   ['home.pool', 'Главная — карточка «Пул»', 'club-2'],
@@ -86,6 +87,7 @@ const NAV = [
   ['hall', 'zale.html'],
   ['gallery', 'galerija.html'],
   ['tournaments', 'turniri.html'],
+  ['rules', 'noteikumi.html'],
   ['school', 'skola.html'],
   ['shop', 'veikals.html'],
   ['news', 'jaunumi.html'],
@@ -184,7 +186,7 @@ function footer() {
         ${el('p', 'foot.about', 'foot__about')}
       </div>
       <div class="foot__col"><h3 data-i18n="foot.club">${lv('foot.club')}</h3><ul>${nav('tables', 'galdi.html')}${nav('prices', 'cenas.html')}${nav('hall', 'zale.html')}${nav('gallery', 'galerija.html')}</ul></div>
-      <div class="foot__col"><h3 data-i18n="foot.services">${lv('foot.services')}</h3><ul>${nav('tournaments', 'turniri.html')}${nav('school', 'skola.html')}${nav('shop', 'veikals.html')}${nav('news', 'jaunumi.html')}</ul></div>
+      <div class="foot__col"><h3 data-i18n="foot.services">${lv('foot.services')}</h3><ul>${nav('tournaments', 'turniri.html')}${nav('rules', 'noteikumi.html')}${nav('school', 'skola.html')}${nav('shop', 'veikals.html')}${nav('news', 'jaunumi.html')}</ul></div>
       <div class="foot__col"><h3 data-i18n="foot.contact">${lv('foot.contact')}</h3>
         <ul>
           <li><a href="${SITE.map}" target="_blank" rel="noopener">${SITE.street}, ${SITE.city}, ${SITE.zip}</a></li>
@@ -218,7 +220,7 @@ function shell(page, body) {
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>${title}</title>
 <meta name="description" content="${desc}">
-<meta name="theme-color" content="${THEME === 'light' ? '#ffffff' : '#000000'}">
+<meta name="theme-color" content="${THEME === 'light' ? '#ffffff' : '#0a2b1f'}">
 <meta name="color-scheme" content="${THEME}">
 <meta property="og:type" content="website">
 <meta property="og:title" content="${title}">
@@ -327,7 +329,7 @@ pages.push({
   body: () => `
 <section class="hero">
   <div class="container hero__in">
-    <div class="hero-logo reveal" data-logo>${emblem(96)}</div>
+    <div class="hero-logo reveal${fs.existsSync(path.join(ROOT, 'assets/img/logo.jpg')) ? ' hero-logo--img hero-logo--badge' : ''}" data-logo>${fs.existsSync(path.join(ROOT, 'assets/img/logo.jpg')) ? `<img src="assets/img/logo.jpg" alt="${lv('logo.alt')}" data-i18n-alt="logo.alt" width="900" height="900" decoding="async">` : emblem(96)}</div>
     ${el('p', 'home.eyebrow', 'eyebrow reveal')}
     ${el('h1', 'home.h1', 'display reveal')}
     ${el('p', 'home.lead', 'lead reveal')}
@@ -401,7 +403,7 @@ pages.push({
   <div class="container">
     ${sectionHead('home.news.eyebrow', 'home.news.h', '', rowControls)}
   </div>
-  <div class="row row--news" data-row>
+  <div class="row row--news" data-row id="news-row">
     ${newsItems.map(newsCard).join('')}
   </div>
   <p class="center reveal">${textLink('jaunumi.html', 'cta.all_news')}</p>
@@ -485,7 +487,7 @@ pages.push({
 ${pageHero('tour.eyebrow', 'tour.h1', 'tour.lead', { actions: btn(SITE.tournaments, 'tour.open', 'primary', ICON.ext), photo: 'tournaments.hero' })}
 <section class="section">
   <div class="container narrow-xl">
-    <ul class="lines">
+    <ul class="lines" id="tournaments">
       ${[1, 2, 3].map((i) => `
       <li class="line reveal"><span class="line__n">0${i}</span><div><span class="chip">${lv('tour.' + i + '.tag') && t('tour.' + i + '.tag')}</span>${el('h2', 'tour.' + i + '.h', 'h3')}${el('p', 'tour.' + i + '.p')}</div></li>`).join('')}
     </ul>
@@ -591,13 +593,48 @@ ${pageHero('gallery.eyebrow', 'gallery.h1', 'gallery.lead')}
 ${ctaBand('hall.cta.h', 'hall.cta.p', btn('galdi.html', 'nav.tables', 'ghost', ICON.arrow))}`,
 });
 
+
+// ---- rules page (static defaults; admin can override via /api/content)
+const escH = (x) => String(x).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+function bodyHtml(text) {
+  const out = []; let list = null;
+  String(text || '').split('\n').forEach((ln) => {
+    const m = /^\s*[-•]\s+(.*)$/.exec(ln);
+    if (m) { (list = list || []).push(m[1]); return; }
+    if (list) { out.push('<ul>' + list.map((i) => '<li>' + escH(i) + '</li>').join('') + '</ul>'); list = null; }
+    if (ln.trim()) out.push('<p>' + escH(ln.trim()) + '</p>');
+  });
+  if (list) out.push('<ul>' + list.map((i) => '<li>' + escH(i) + '</li>').join('') + '</ul>');
+  return out.join('');
+}
+RULES.forEach((r) => {
+  D['rules.' + r.id + '.h'] = [r.title.lv, r.title.ru, r.title.en];
+  D['rules.' + r.id + '.b'] = [bodyHtml(r.body.lv), bodyHtml(r.body.ru), bodyHtml(r.body.en)];
+});
+const ruleShown = RULES.filter((r) => r.body.lv || r.body.ru || r.body.en || r.link);
+
+pages.push({
+  id: 'rules', file: 'noteikumi.html',
+  body: () => `
+${pageHero('rules.eyebrow', 'rules.h1', 'rules.lead')}
+<section class="section section--flush">
+  <div class="container narrow-xl">
+    <nav class="fchips" id="rules-nav" aria-label="${escH(lv('nav.rules'))}">${ruleShown.map((r) => `<a class="fchip" href="#r-${r.id}" data-i18n="rules.${r.id}.h">${lv('rules.' + r.id + '.h')}</a>`).join('')}</nav>
+    <div class="rules" id="rules-list">${ruleShown.map((r) => `
+      <article class="rule reveal" id="r-${r.id}"><h2 class="h3" data-i18n="rules.${r.id}.h">${lv('rules.' + r.id + '.h')}</h2><div class="rule__b" data-i18n="rules.${r.id}.b">${lv('rules.' + r.id + '.b')}</div></article>`).join('')}
+    </div>
+  </div>
+</section>
+${ctaBand('home.cta.h', 'home.cta.p', btn('turniri.html', 'nav.tournaments', 'ghost', ICON.arrow))}`,
+});
+
 pages.push({
   id: 'news', file: 'jaunumi.html',
   body: () => `
 ${pageHero('news.eyebrow', 'news.h1', 'news.lead')}
 <section class="section section--flush">
   <div class="container">
-    <div class="ngrid">${newsItems.map(newsCard).join('')}</div>
+    <div class="ngrid" id="news-grid">${newsItems.map(newsCard).join('')}</div>
   </div>
 </section>
 ${ctaBand('home.cta.h', 'home.cta.p', btn('galdi.html', 'nav.tables', 'ghost', ICON.arrow))}`,
@@ -659,8 +696,13 @@ write(path.join(OUT, '404.html'), shell(
 ).replace('<meta name="description"', '<meta name="robots" content="noindex"><meta name="description"'));
 
 const tri3 = (k) => ({ lv: D[k][0], ru: D[k][1], en: D[k][2] });
+const NEWS_DATES = { n1: '2026-10-05', n2: '2026-09-28', n3: '2026-09-15', n4: '2026-09-01', n5: '2026-08-20' };
+const TOUR_DEF = [1, 2, 3].map((i) => ({ id: 'tr' + i, date: '', time: '', title: tri3('tour.' + i + '.h'), info: tri3('tour.' + i + '.p'), link: '' }));
 const defaults = {
   tel: SITE.tel,
+  news: newsItems.map(([id, tag, photo]) => ({ id, date: NEWS_DATES[id], cat: tag, title: tri3(id + '.h'), text: tri3(id + '.p'), img: photoSrc(photo) })),
+  tournaments: TOUR_DEF,
+  rules: RULES.map((r) => ({ id: r.id, title: r.title, body: r.body, link: r.link })),
   slots: SLOTS.map(([key, label]) => ({ key, label, img: SLOT_DEF[key] ? photoSrc(key) : '' })),
   products: PRODUCTS.map(([k, , photo]) => ({ id: k, name: tri3('shop.' + k + '.h'), desc: tri3('shop.' + k + '.p'), price: '', img: photoSrc(photo) })),
   prices: { groups: PRICE_DEFAULTS.map((g) => ({ id: g.id, vip: g.vip, title: tri3(g.title), note: tri3(g.note), rows: [{ id: g.id + '-r1', label: tri3('prices.hour'), price: '', unit: { lv: '', ru: '', en: '' } }] })) },

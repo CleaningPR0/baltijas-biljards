@@ -180,8 +180,96 @@
     else if (e.key === 'ArrowRight') lbShow(lbIdx + 1);
   });
 
+
+  /* ---------- shared text helpers ---------- */
+  var LOC = { lv: 'lv-LV', ru: 'ru-RU', en: 'en-GB' };
+  function parseDate(v) { return /^\d{4}-\d{2}-\d{2}$/.test(v || '') ? new Date(v + 'T12:00:00') : null; }
+  function fmtDate(v) {
+    var d = parseDate(v);
+    return d ? d.toLocaleDateString(LOC[BB.lang] || 'lv-LV', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+  }
+  function bodyHtml(text) {
+    var out = [], list = null;
+    String(text || '').split('\n').forEach(function (ln) {
+      var m = /^\s*[-•]\s+(.*)$/.exec(ln);
+      if (m) { (list = list || []).push(m[1]); return; }
+      if (list) { out.push('<ul>' + list.map(function (i) { return '<li>' + esc(i) + '</li>'; }).join('') + '</ul>'); list = null; }
+      if (ln.trim()) out.push('<p>' + esc(ln.trim()) + '</p>');
+    });
+    if (list) out.push('<ul>' + list.map(function (i) { return '<li>' + esc(i) + '</li>'; }).join('') + '</ul>');
+    return out.join('');
+  }
+  function safeLink(u) { return /^https?:\/\//i.test(u || '') ? u : ''; }
+  var EXT = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 16L16 8M9 8h7v7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  /* ---------- news ---------- */
+  function newsCard(n) {
+    var title = pick(n.title, BB.lang), text = pick(n.text, BB.lang), date = fmtDate(n.date);
+    return '<article class="ncard reveal is-in">' +
+      (n.img ? '<div class="ph ncard__img"><img src="' + esc(n.img) + '" alt="" loading="lazy" decoding="async" onerror="this.parentNode.classList.add(\'is-empty\');this.remove()"></div>' : '') +
+      '<div class="ncard__body"><p class="ncard__meta"><span class="chip">' + esc(tr('tag.' + (n.cat || 'club'))) + '</span>' + (date ? '<time>' + esc(date) + '</time>' : '') + '</p>' +
+      '<h3>' + esc(title) + '</h3>' + (text ? '<p>' + esc(text).replace(/\n/g, '<br>') + '</p>' : '') + '</div></article>';
+  }
+  function renderNews() {
+    var list = BB.content && BB.content.news;
+    if (!Array.isArray(list)) return;
+    list = list.slice().sort(function (a, b) { return (b.date || '') < (a.date || '') ? -1 : (b.date || '') > (a.date || '') ? 1 : 0; });
+    var grid = document.getElementById('news-grid'), row = document.getElementById('news-row');
+    if (grid) {
+      var e = document.getElementById('news-empty');
+      grid.innerHTML = list.map(newsCard).join('');
+      if (!list.length && !e) { e = document.createElement('p'); e.id = 'news-empty'; e.className = 'note'; grid.parentNode.insertBefore(e, grid.nextSibling); }
+      if (e) { if (list.length) e.remove(); else { e.setAttribute('data-i18n', 'news.empty'); e.textContent = tr('news.empty'); } }
+    }
+    if (row) row.innerHTML = list.slice(0, 6).map(newsCard).join('');
+  }
+
+  /* ---------- tournaments ---------- */
+  function renderTournaments() {
+    var box = document.getElementById('tournaments');
+    var list = BB.content && BB.content.tournaments;
+    if (!box || !Array.isArray(list)) return;
+    var today = new Date(); today.setHours(0, 0, 0, 0);
+    var isPast = function (t) { var d = parseDate(t.date); return !!d && d < today; };
+    var up = list.filter(function (t) { return !isPast(t); }).sort(function (a, b) { return (a.date || '9999') < (b.date || '9999') ? -1 : 1; });
+    var past = list.filter(isPast).sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+    var empty = document.getElementById('tournaments-empty');
+    if (!up.length && !past.length) {
+      box.innerHTML = '';
+      if (!empty) { empty = document.createElement('p'); empty.id = 'tournaments-empty'; empty.className = 'note'; box.parentNode.insertBefore(empty, box.nextSibling); }
+      empty.setAttribute('data-i18n', 'tour.empty'); empty.textContent = tr('tour.empty');
+      return;
+    }
+    if (empty) empty.remove();
+    box.innerHTML = up.concat(past).map(function (t) {
+      var d = parseDate(t.date), gone = isPast(t), link = safeLink(t.link), info = pick(t.info, BB.lang);
+      var big = d ? '<b>' + d.getDate() + '</b><small>' + esc(d.toLocaleDateString(LOC[BB.lang] || 'lv-LV', { month: 'short' }).replace('.', '')) + '</small>' : '<b>•</b>';
+      return '<li class="line' + (gone ? ' line--past' : '') + ' reveal is-in"><span class="line__n line__n--date">' + big + '</span><div>' +
+        '<span class="chip">' + esc([gone ? tr('tour.past') : '', d ? d.getFullYear() : '', t.time].filter(Boolean).join(' · ')) + '</span>' +
+        '<h2 class="h3">' + esc(pick(t.title, BB.lang)) + '</h2>' +
+        (info ? '<div class="line__info"><p class="line__lab">' + esc(tr('tour.regs')) + '</p>' + bodyHtml(info) + '</div>' : '') +
+        (link ? '<p class="line__act"><a class="btn btn--primary btn--sm" href="' + esc(link) + '" target="_blank" rel="noopener">' + esc(tr('tour.register')) + EXT + '</a></p>' : '') +
+        '</div></li>';
+    }).join('');
+  }
+
+  /* ---------- rules ---------- */
+  function renderRules() {
+    var box = document.getElementById('rules-list');
+    var list = BB.content && BB.content.rules;
+    if (!box || !Array.isArray(list)) return;
+    var shown = list.filter(function (r) { return pick(r.body, BB.lang) || r.body && (r.body.lv || r.body.ru || r.body.en) || safeLink(r.link); });
+    var nav = document.getElementById('rules-nav');
+    if (nav) nav.innerHTML = shown.map(function (r) { return '<a class="fchip" href="#r-' + esc(r.id) + '">' + esc(pick(r.title, BB.lang)) + '</a>'; }).join('');
+    box.innerHTML = shown.map(function (r) {
+      var link = safeLink(r.link);
+      return '<article class="rule reveal is-in" id="r-' + esc(r.id) + '"><h2 class="h3">' + esc(pick(r.title, BB.lang)) + '</h2><div class="rule__b">' + bodyHtml(pick(r.body, BB.lang)) + '</div>' +
+        (link ? '<p><a class="tlink" href="' + esc(link) + '" target="_blank" rel="noopener">' + esc(tr('rules.doc')) + '</a></p>' : '') + '</article>';
+    }).join('') || '<p class="note">' + esc(tr('rules.empty')) + '</p>';
+  }
+
   /* ---------- wiring ---------- */
-  function renderAll() { renderProducts(); renderPrices(); renderGallery(); }
+  function renderAll() { renderProducts(); renderPrices(); renderGallery(); renderNews(); renderTournaments(); renderRules(); }
   BB.renderAll = renderAll;
   document.addEventListener('langchange', renderAll);
   BB.apply = function (c) {

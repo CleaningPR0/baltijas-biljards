@@ -96,3 +96,9 @@ textarea.bba-in { resize: vertical; }
   .bba-sub { display: none; }
   .bba-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
 }
+
+.bba-post { grid-template-columns: 190px 1fr; align-items: start; }
+.bba-post__img { display: grid; gap: 10px; }
+.bba-post__img .bba-thumb--sm { width: 100%; }
+.bba-field input[type="date"] { padding: 11px 14px; border: 1px solid #d6d6d6; border-radius: 12px; font: inherit; }
+@media (max-width: 860px) { .bba-post { grid-template-columns: 1fr; } }

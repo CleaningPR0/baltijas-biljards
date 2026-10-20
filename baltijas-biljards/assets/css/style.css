@@ -10,35 +10,36 @@
   --font: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont, "Inter", "Helvetica Neue", Arial, sans-serif;
   color-scheme: dark;
 
-  /* DARK (default) — Apple dark: black canvas, #1d1d1f tiles */
-  --white: #000000;
-  --mist: #1d1d1f;
-  --frost: #161617;
-  --card: #2c2c2e;
-  --tile: #f5f5f7;
-  --ph: #2c2c2e;
-  --hair: #3a3a3c;
-  --ctl: #2c2c2e;
-  --ink: #f5f5f7;
-  --slate: #a1a1a6;
-  --steel: #86868b;
-  --link: #2997ff;
-  --blue: #0071e3;
-  --blue-h: #0077ed;
-  --orange: #ff9f0a;
-  --unlit: #48484a;
-  --nav-bg: rgba(0, 0, 0, .72);
-  --nav-ink: rgba(245, 245, 247, .82);
+  /* DARK GREEN (default) — billiard-cloth green, slightly darkened */
+  --white: #0a2b1f;
+  --mist: #0f3827;
+  --frost: #0c3022;
+  --card: #154431;
+  --tile: #f1ede0;
+  --ph: #154431;
+  --hair: #2a5d46;
+  --ctl: #1a4a35;
+  --ink: #f4f1e6;
+  --slate: #a8bfb1;
+  --steel: #86a595;
+  --link: #e6c26e;
+  --blue: #d9ab4b;
+  --blue-h: #e6bd62;
+  --on-blue: #1b1404;
+  --orange: #e8b45a;
+  --unlit: #2f5e49;
+  --nav-bg: rgba(10, 43, 31, .8);
+  --nav-ink: rgba(244, 241, 230, .84);
   --nav-ink-h: #ffffff;
-  --nav-sheet: rgba(0, 0, 0, .98);
-  --hover: rgba(255, 255, 255, .1);
-  --rowctl: rgba(72, 72, 74, .6);
-  --rowbtn: rgba(255, 255, 255, .72);
+  --nav-sheet: rgba(10, 43, 31, .98);
+  --hover: rgba(255, 255, 255, .08);
+  --rowctl: rgba(42, 93, 70, .6);
+  --rowbtn: rgba(244, 241, 230, .75);
   --rowbtn-h: rgba(255, 255, 255, .14);
-  --hole: #000000;
-  --ball: #f5f5f7;
-  --map-filter: invert(.92) hue-rotate(180deg) saturate(.7) brightness(.95) contrast(.95);
-  --emblem-core: #000000;
+  --hole: #04140d;
+  --ball: #f4f1e6;
+  --map-filter: invert(.92) hue-rotate(180deg) saturate(.6) brightness(.9) contrast(.95) sepia(.35) hue-rotate(-60deg);
+  --emblem-core: #0a2b1f;
 
   --r: 28px;
   --ease: cubic-bezier(.28, .11, .32, 1);
@@ -48,7 +49,7 @@
   color-scheme: light;
   --white: #ffffff; --mist: #f5f5f7; --frost: #fafafc; --card: #ffffff; --tile: #f5f5f7; --ph: #e8e8ed;
   --hair: #d6d6d6; --ctl: #e6e6e8; --ink: #1d1d1f; --slate: #707070; --steel: #86868b;
-  --link: #0066cc; --orange: #b64400; --unlit: #c7c7cc;
+  --link: #0066cc; --blue: #0071e3; --blue-h: #0077ed; --on-blue: #ffffff; --orange: #b64400; --unlit: #c7c7cc;
   --nav-bg: rgba(255, 255, 255, .8); --nav-ink: rgba(0, 0, 0, .8); --nav-ink-h: #000000; --nav-sheet: rgba(250, 250, 252, .98);
   --hover: rgba(0, 0, 0, .05); --rowctl: rgba(210, 210, 215, .64); --rowbtn: rgba(0, 0, 0, .56); --rowbtn-h: rgba(255, 255, 255, .6);
   --hole: #1d1d1f; --ball: #ffffff; --map-filter: none; --emblem-core: #ffffff;
@@ -89,7 +90,7 @@ h3, .h3 { font-size: clamp(1.4rem, 2vw, 1.75rem); line-height: 1.14; letter-spac
 
 /* ---------- buttons & links ---------- */
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 22px; border-radius: 9999px; font: 400 1.0625rem/1.2 var(--font); letter-spacing: -.022em; border: 1px solid transparent; cursor: pointer; transition: background .3s var(--ease), color .3s var(--ease), border-color .3s var(--ease); white-space: nowrap; }
-.btn--primary { background: var(--blue); color: #fff; }
+.btn--primary { background: var(--blue); color: var(--on-blue); }
 .btn--primary:hover { background: var(--blue-h); }
 .btn--ghost { border-color: var(--steel); color: var(--ink); background: transparent; }
 .btn--ghost:hover { background: var(--hover); }
@@ -381,7 +382,7 @@ body.lb-open { overflow: hidden; }
   .foot { grid-template-columns: 1fr 1fr 1fr; }
   .foot__brand { grid-column: 1 / -1; }
 }
-@media (max-width: 1399px) {
+@media (max-width: 1479px) {
   .bar { grid-template-columns: 1fr auto; }
   .burger { display: block; }
   .bar__book { display: none; }
@@ -441,3 +442,31 @@ body.lb-open { overflow: hidden; }
 @media (max-width: 560px) { .trio--4 { grid-template-columns: 1fr !important; } }
 
 @media (max-width: 1699px) { .bar__book { display: none; } }
+
+/* ---------- hero logo badge (club logo, slightly darkened) ---------- */
+.hero-logo--badge img { width: clamp(220px, 28vw, 320px); max-width: none; max-height: none; height: auto; aspect-ratio: 1; border-radius: 30px; filter: brightness(.82) saturate(.92); object-fit: cover; }
+
+/* ---------- news from admin ---------- */
+.ncard__body p { white-space: normal; }
+.row--news .ncard__body p { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+.ngrid .ncard:not(:has(.ncard__img)) { background: var(--mist); }
+
+/* ---------- tournaments from admin ---------- */
+.line__n--date { display: flex; flex-direction: column; line-height: 1; }
+.line__n--date b { font-size: clamp(2.2rem, 4vw, 3.2rem); font-weight: 600; color: var(--ink); letter-spacing: -.02em; }
+.line__n--date small { font-size: .9375rem; color: var(--slate); font-weight: 500; text-transform: uppercase; letter-spacing: .04em; margin-top: 6px; }
+.line--past { opacity: .55; }
+.line__info { margin-top: 10px; max-width: 62ch; color: var(--slate); }
+.line__info p, .line__info ul { margin: 0 0 .6em; color: var(--slate); }
+.line__lab { color: var(--ink) !important; font-weight: 600; font-size: .9375rem; }
+.line__info ul, .rule__b ul { list-style: disc; padding-left: 1.2em; display: grid; gap: .35em; margin: 0 0 .8em; }
+.line__act { margin: 18px 0 0 !important; }
+
+/* ---------- rules page ---------- */
+.rules { display: grid; gap: 20px; }
+.rule { background: var(--mist); border-radius: var(--r); padding: clamp(26px, 3.4vw, 44px); scroll-margin-top: calc(var(--header-h) + 20px); }
+.rule h2 { margin: 0 0 .5em; font-size: clamp(1.6rem, 2.6vw, 2.2rem); }
+.rule__b p { color: var(--slate); max-width: 68ch; }
+.rule__b ul { color: var(--slate); max-width: 68ch; }
+.rule__b li::marker { color: var(--orange); }
+.fchips a.fchip { display: inline-block; }
