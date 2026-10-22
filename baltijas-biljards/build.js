@@ -233,7 +233,8 @@ ${canon}
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;800;900&display=swap">
 <link rel="stylesheet" href="assets/css/style.css?v=${BUILD}">
 <script>document.documentElement.classList.add('js')</script>
 ${ld}
@@ -332,15 +333,22 @@ pages.push({
   body: () => `
 <section class="splash" aria-label="${SITE.name}">
   <div class="container splash__in">
-    ${el('p', 'home.eyebrow', 'eyebrow reveal')}
-    ${el('h1', 'home.h1', 'display reveal')}
-    ${el('p', 'home.lead', 'lead reveal')}
-    <div class="hero__actions reveal">
-      ${btn('tel:' + SITE.tel, 'cta.book', 'primary')}
-      ${textLink('kontakti.html', 'home.where')}
+    <div class="splash__txt">
+      ${el('p', 'home.eyebrow', 'eyebrow reveal')}
+      ${el('h1', 'home.h1', 'display reveal')}
+      ${el('p', 'home.lead', 'lead reveal')}
+      <div class="hero__actions reveal">
+        ${btn('tel:' + SITE.tel, 'cta.book', 'primary')}
+        ${textLink('kontakti.html', 'home.where')}
+      </div>
+    </div>
+    <div class="splash__art" aria-hidden="true">
+      ${[['y','1'],['b','2'],['r','3'],['p','4'],['o','5'],['g','6'],['w',''],['k','8']].map(([c,n],i)=>`<span class="ball ball--${c} ball--${i+1}"><i>${n}</i></span>`).join('')}
     </div>
   </div>
 </section>
+
+${(()=>{const l=[1,2,3,4,5,6,7,8].map(i=>`<li>${t('mq.'+i)}</li>`).join('');return `<div class="mq" aria-label="${SITE.name}"><div class="mq__track"><ul>${l}</ul><ul aria-hidden="true">${l}</ul></div></div>`;})()}
 
 <section class="hero hero--frame">
   <div class="frame" data-frame>
