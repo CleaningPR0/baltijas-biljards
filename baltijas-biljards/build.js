@@ -331,7 +331,6 @@ pages.push({
   id: 'index', file: 'index.html',
   body: () => `
 <section class="splash" aria-label="${SITE.name}">
-  <div class="splash__bg hero-logo--img" data-logo>${HAS_LOGO ? `<img src="assets/img/logo.jpg" alt="${lv('logo.alt')}" data-i18n-alt="logo.alt" width="900" height="900" decoding="async" fetchpriority="high">` : ''}</div>
   <div class="container splash__in">
     ${el('p', 'home.eyebrow', 'eyebrow reveal')}
     ${el('h1', 'home.h1', 'display reveal')}
