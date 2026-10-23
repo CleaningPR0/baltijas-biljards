@@ -153,6 +153,27 @@
   window.addEventListener('resize', onScroll);
   onScroll();
 
+  /* ---------- lamp over the leather (home splash) ---------- */
+  (function () {
+    var sp = document.querySelector('.splash'); if (!sp || reduce) return;
+    var tx = 50, ty = 36, cx = 50, cy = 36, raf = 0, drift = !(window.matchMedia && window.matchMedia('(hover: hover)').matches);
+    function tick(t) {
+      if (drift) { tx = 50 + Math.sin(t / 3800) * 16; ty = 36 + Math.cos(t / 5200) * 8; }
+      cx += (tx - cx) * .07; cy += (ty - cy) * .07;
+      sp.style.setProperty('--lx', cx.toFixed(2) + '%'); sp.style.setProperty('--ly', cy.toFixed(2) + '%');
+      raf = requestAnimationFrame(tick);
+    }
+    var art = sp.querySelector('.splash__art');
+    sp.addEventListener('pointermove', function (e) {
+      if (e.pointerType === 'touch') return; drift = false;
+      if (art) { art.style.setProperty('--px', ((e.clientX / window.innerWidth - .5) * -2).toFixed(3)); art.style.setProperty('--py', ((e.clientY / window.innerHeight - .5) * -2).toFixed(3)); }
+      var r = sp.getBoundingClientRect(); tx = (e.clientX - r.left) / r.width * 100; ty = (e.clientY - r.top) / r.height * 100;
+    });
+    if ('IntersectionObserver' in window) new IntersectionObserver(function (en) {
+      if (en[0].isIntersecting) { if (!raf) raf = requestAnimationFrame(tick); } else { cancelAnimationFrame(raf); raf = 0; }
+    }).observe(sp); else raf = requestAnimationFrame(tick);
+  })();
+
   /* ---------- reveal ---------- */
   var items = document.querySelectorAll('.reveal');
   if (!('IntersectionObserver' in window) || reduce) {
