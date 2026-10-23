@@ -201,7 +201,7 @@ function footer() {
     </div>
     <div class="foot__bar">
       <p>© <span data-year>2026</span> ${SITE.name}. <span data-i18n="foot.rights">${lv('foot.rights')}</span></p>
-      <p><a href="privatums.html" data-i18n="foot.privacy">${lv('foot.privacy')}</a></p>
+      <p><a href="privatums.html" data-i18n="foot.privacy">${lv('foot.privacy')}</a> <button type="button" class="linkbtn" data-cc-open data-i18n="cc.settings">${lv('cc.settings')}</button></p>
       <a class="totop" href="#top"><span data-i18n="cta.top">${lv('cta.top')}</span>${ICON.up}</a>
     </div>
   </div>
@@ -231,10 +231,6 @@ function shell(page, body) {
 <meta property="og:site_name" content="${SITE.name}">
 ${canon}
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;800;900&display=swap">
 <link rel="stylesheet" href="assets/css/style.css?v=${BUILD}">
 <script>document.documentElement.classList.add('js')</script>
 ${ld}
@@ -245,6 +241,11 @@ ${header(page)}
 ${body}
 </main>
 ${footer()}
+<div class="cc" id="cc" role="dialog" aria-live="polite" hidden>
+  <p data-i18n="cc.text">${lv('cc.text')}</p>
+  <div class="cc__act"><button type="button" class="btn btn--ghost btn--sm" data-cc="no" data-i18n="cc.no">${lv('cc.no')}</button><button type="button" class="btn btn--primary btn--sm" data-cc="yes" data-i18n="cc.yes">${lv('cc.yes')}</button></div>
+  <a href="privatums.html" class="cc__more" data-i18n="foot.privacy">${lv('foot.privacy')}</a>
+</div>
 <script src="assets/js/i18n-data.js?v=${BUILD}"></script>
 <script src="assets/js/main.js?v=${BUILD}"></script>
 <script src="assets/js/content.js?v=${BUILD}"></script>
@@ -666,7 +667,7 @@ ${pageHero('contacts.eyebrow', 'contacts.h1', 'contacts.lead')}
       <div class="info reveal">${ICON.car}<div><h2 data-i18n="contacts.parking">${lv('contacts.parking')}</h2><p data-i18n="contacts.parking_v">${lv('contacts.parking_v')}</p></div></div>
       <div class="info reveal">${ICON.clock}<div><h2 data-i18n="contacts.hours">${lv('contacts.hours')}</h2><p data-i18n="contacts.hours_v">${lv('contacts.hours_v')}</p></div></div>
     </div>
-    <div class="map reveal"><iframe title="${lv('contacts.map')}" src="${SITE.mapEmbed}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe></div>
+    <div class="map reveal" data-map="${SITE.mapEmbed}" data-title="${lv('contacts.map')}"><div class="map__ph"><p data-i18n="cc.map">${lv('cc.map')}</p><div class="map__act"><button type="button" class="btn btn--primary" data-map-load data-i18n="cc.mapyes">${lv('cc.mapyes')}</button><a class="btn btn--ghost" href="${SITE.mapLink || 'https://maps.app.goo.gl/ugoQrowSYuxNYjnA7'}" target="_blank" rel="noopener" data-i18n="cc.maplink">${lv('cc.maplink')}</a></div></div></div>
     <p class="center reveal">${btn('tel:' + SITE.tel, 'cta.call', 'primary', ICON.phone)}${btn(SITE.map, 'cta.route', 'ghost', ICON.ext)}</p>
   </div>
 </section>
