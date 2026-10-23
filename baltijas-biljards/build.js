@@ -348,7 +348,7 @@ pages.push({
   </div>
 </section>
 
-${(()=>{const l=[1,2,3,4,5,6,7,8].map(i=>`<li>${t('mq.'+i)}</li>`).join('');return `<div class="mq" aria-label="${SITE.name}"><div class="mq__track"><ul>${l}</ul><ul aria-hidden="true">${l}</ul></div></div>`;})()}
+${(()=>{const l=[1,2,4,5,6,7,8].map(i=>`<li>${t('mq.'+i)}</li>`).join('');return `<div class="mq" aria-label="${SITE.name}"><div class="mq__track"><ul>${l}</ul><ul aria-hidden="true">${l}</ul></div></div>`;})()}
 
 <section class="hero hero--frame">
   <div class="frame" data-frame>
