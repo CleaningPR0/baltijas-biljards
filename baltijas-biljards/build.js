@@ -344,7 +344,10 @@ pages.push({
       </div>
     </div>
     <div class="splash__art" aria-hidden="true">
-      ${[['y','1'],['b','2'],['r','3'],['p','4'],['o','5'],['g','6'],['w',''],['k','8']].map(([c,n],i)=>`<span class="ball ball--${c} ball--${i+1}"><i>${n}</i></span>`).join('')}
+      <div class="medal">
+        <span class="medal__stitch"></span>
+        <span class="medal__face"><img src="assets/img/logo.jpg?v=${BUILD}" alt="" width="900" height="900" data-medal-logo decoding="async"><span class="medal__glare"></span></span>
+      </div>
     </div>
   </div>
 </section>

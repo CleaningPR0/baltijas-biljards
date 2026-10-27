@@ -250,6 +250,8 @@ module.exports = {
   'rules.doc': ['Atvērt dokumentu', 'Открыть документ', 'Open the document'],
   'rules.empty': ['Noteikumi drīz tiks pievienoti.', 'Правила скоро появятся.', 'Rules will be added soon.'],
   'news.empty': ['Jaunumu pagaidām nav.', 'Новостей пока нет.', 'No news yet.'],
+  'tour.more': ['Nolikums un reģistrācija', 'Положение и регистрация', 'Details and registration'],
+  'tour.less': ['Aizvērt', 'Свернуть', 'Close'],
   'tour.register': ['Reģistrēties', 'Регистрация', 'Register'],
   'tour.regs': ['Nolikums', 'Положение о турнире', 'Tournament regulations'],
   'tour.past': ['Notika', 'Прошёл', 'Held'],
