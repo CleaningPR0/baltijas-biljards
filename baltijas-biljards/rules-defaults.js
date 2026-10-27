@@ -9,17 +9,17 @@ module.exports = [
     title: t('Disciplīnas', 'Дисциплины', 'Disciplines'),
     body: t(
 `Mūsu klubā spēlē trīs galvenos biljarda veidus:
-- Krievu biljards (piramīda): brīvā, kombinētā, moskviešu un dinamiskā piramīda.
+- Piramīda: brīvā, kombinētā un dinamiskā piramīda, kā arī daudzcīņa.
 - Pūls: 8 bumbas, 9 bumbas, 10 bumbas un 14.1 nepārtrauktā spēle.
 - Snukers: klasiskais snukers ar 15 sarkanajām un 6 krāsainajām bumbām.
 Konkrētā turnīra disciplīna vienmēr norādīta turnīra nolikumā.`,
 `В клубе играют в три основных вида бильярда:
-- Русский бильярд (пирамида): свободная, комбинированная, московская и динамичная пирамида.
+- Пирамида: свободная, комбинированная и динамичная пирамида, а также многоборье.
 - Пул: 8 шаров, 9 шаров, 10 шаров и 14.1 «в одну партию».
 - Снукер: классический снукер с 15 красными и 6 цветными шарами.
 Дисциплина конкретного турнира всегда указана в положении о турнире.`,
 `The club offers three main kinds of billiards:
-- Russian billiards (pyramid): free, combined, Moscow and dynamic pyramid.
+- Pyramid: free, combined and dynamic pyramid, plus the all-around (multi-discipline) event.
 - Pool: 8-ball, 9-ball, 10-ball and 14.1 continuous.
 - Snooker: classic snooker with 15 reds and 6 colours.
 The discipline of a given tournament is always stated in its regulations.`)
@@ -33,19 +33,19 @@ The discipline of a given tournament is always stated in its regulations.`)
 - Bumbas saliek trijstūrī, spēle sākas ar sitienu pa piramīdu.
 - Uzvar tas, kurš pirmais iesit noteikto bumbu skaitu (parasti 8).
 - Kļūda (fouls): bita iešana kabatā, bumba ārpus galda vai nepareizs sitiens — gājiens pāriet pretiniekam.
-- Precīzus noteikumus nosaka izvēlētā disciplīna (brīvā, kombinētā, moskviešu, dinamiskā).`,
+- Precīzus noteikumus nosaka izvēlētā disciplīna (brīvā, kombinētā, dinamiskā, daudzcīņa).`,
 `Краткая памятка. Официальный текст правил — у судьи или в клубе.
 - Играют на столе 12 футов, 15 прицельных шаров и биток, диаметр шаров 68 мм.
 - Шары ставятся треугольником, партия начинается с разбоя пирамиды.
 - Побеждает тот, кто первым забьёт нужное число шаров (обычно 8).
 - Фол: биток в лузе, шар за бортом или неправильный удар — ход переходит сопернику.
-- Точные правила зависят от выбранной дисциплины (свободная, комбинированная, московская, динамичная).`,
+- Точные правила зависят от выбранной дисциплины (свободная, комбинированная, динамичная, многоборье).`,
 `A short reminder. The official rules are available from the referee or at the club.
 - Played on a 12 ft table with 15 object balls and a cue ball, ball diameter 68 mm.
 - Balls are racked in a triangle and the game starts with a break.
 - The winner is the first to pocket the required number of balls (usually 8).
 - Foul: cue ball pocketed, ball off the table or a wrong stroke — the turn passes to the opponent.
-- Exact rules depend on the chosen discipline (free, combined, Moscow, dynamic).`)
+- Exact rules depend on the chosen discipline (free, combined, dynamic, all-around).`)
   },
   {
     id: 'pool', link: '',
