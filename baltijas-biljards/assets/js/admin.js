@@ -475,7 +475,7 @@
     ensurePrices();
     var groups = content.prices.groups;
     append(main, h('h2', { class: 'bba-h1', text: 'Прайс-лист' }));
-    append(main, h('p', { class: 'bba-hint', text: 'Группы — это столы (бильярд, пул, русский, VIP зал). В каждой группе добавляйте строки: «1 час», «Вечер», «Абонемент» и т.д. Пустая цена на сайте показывается как «Цену уточняйте по телефону».' }));
+    append(main, h('p', { class: 'bba-hint', text: 'Группы — это столы (пирамида, пул, VIP зал). В каждой группе добавляйте строки: «1 час», «Вечер», «Абонемент» и т.д. Пустая цена на сайте показывается как «Цену уточняйте по телефону».' }));
     groups.forEach(function (g, gi) {
       var rowsBox = h('div', { class: 'bba-rows' });
       (g.rows || []).forEach(function (r, ri) {
