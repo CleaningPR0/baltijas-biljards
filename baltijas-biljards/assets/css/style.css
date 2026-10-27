@@ -619,30 +619,13 @@ body { letter-spacing: -.005em; }
 .splash .hero__actions { justify-content: flex-start; margin-top: 30px; }
 
 .splash__art { --px: 0; --py: 0; position: relative; width: min(100%, 560px); aspect-ratio: 1; justify-self: center; }
-.ball { --d: 28%; position: absolute; width: var(--d); aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center;
-  background: radial-gradient(circle at 32% 26%, color-mix(in srgb, var(--c) 55%, #fff) 0, var(--c) 38%, color-mix(in srgb, var(--c) 55%, #000) 100%);
-  box-shadow: inset -8px -12px 22px rgba(0,0,0,.38), 0 34px 40px -18px rgba(0,0,0,.7);
-  transform: translate3d(calc(var(--px) * var(--k, 12px)), calc(var(--py) * var(--k, 12px)), 0);
-  animation: bb-float 7s ease-in-out infinite; animation-delay: var(--dl, 0s); }
-.ball i { font: 800 clamp(.9rem, 2.2vw, 1.7rem)/1 var(--font); font-style: normal; color: #111; width: 40%; aspect-ratio: 1; border-radius: 50%; background: #f6f3ea; display: grid; place-items: center; box-shadow: inset 0 -2px 4px rgba(0,0,0,.18); letter-spacing: -.03em; }
-.ball i:empty { display: none; }
-.ball--y { --c: #f2c230; } .ball--b { --c: #2a56b8; } .ball--r { --c: #cc2f2f; } .ball--p { --c: #5b2d83; }
-.ball--o { --c: #e8761f; } .ball--g { --c: #1f8a4c; } .ball--w { --c: #f1ede0; } .ball--k { --c: #1a1a1a; }
-.ball--1 { left: 36%; top: 2%; --dl: -1s; --k: 10px; --d: 30%; }
-.ball--2 { left: 6%; top: 24%; --dl: -3s; --k: 18px; --d: 25%; }
-.ball--3 { left: 62%; top: 20%; --dl: -5s; --k: 22px; --d: 27%; }
-.ball--4 { left: 33%; top: 30%; --dl: -2s; --k: 6px; --d: 31%; }
-.ball--5 { left: 70%; top: 52%; --dl: -4s; --k: 26px; --d: 24%; }
-.ball--6 { left: 12%; top: 56%; --dl: -6s; --k: 20px; --d: 26%; }
-.ball--7 { left: 42%; top: 62%; --dl: -.5s; --k: 14px; --d: 29%; }
-.ball--8 { left: 76%; top: 8%; --dl: -2.5s; --k: 30px; --d: 17%; }
 @keyframes bb-float { 0%, 100% { margin-top: 0; } 50% { margin-top: -14px; } }
 @media (max-width: 860px) {
   .splash__in { grid-template-columns: 1fr; }
   .splash__art { width: min(78vw, 380px); justify-self: end; margin-top: -8px; }
   .splash .display { max-width: 10ch; font-size: clamp(2.8rem, 14vw, 5rem); }
 }
-@media (prefers-reduced-motion: reduce) { .ball { animation: none; } }
+
 
 /* v10 fixes: room for Latvian macrons/carons, small-phone header */
 .display, .h2, h1, .rule h2 { line-height: 1.04; }
@@ -665,3 +648,56 @@ body { letter-spacing: -.005em; }
 .linkbtn:hover { color: var(--cream); }
 
 @media (min-width: 1480px) { .bar { background: rgba(3, 10, 6, .93); } }
+
+
+/* ==========================================================
+   v12 — logo medallion, word spacing, tournament cards
+   ========================================================== */
+.display, .h2, h1, .rule h2, .mq li { letter-spacing: -.035em; word-spacing: .16em; }
+.statement, .tour__title { word-spacing: .08em; }
+.lead, .splash .lead { letter-spacing: 0; word-spacing: .05em; line-height: 1.4; }
+body { letter-spacing: 0; word-spacing: .03em; }
+.lead + .hero__actions, .phero .lead { margin-top: 6px; }
+.phero .display + .lead, .cta .display + .lead, .cta .lead { margin-top: 22px; }
+.cta__phone, .bigphone { word-spacing: .1em; }
+
+/* medallion: the logo as a stitched leather patch with a brass rim, tilting toward the pointer */
+.splash__art { animation: bb-medal-in 1.2s .35s cubic-bezier(.16, 1, .3, 1) backwards; }
+@keyframes bb-medal-in { from { opacity: 0; transform: scale(.84) rotate(-10deg); } to { opacity: 1; transform: none; } }
+.medal { position: absolute; inset: 9%; border-radius: 50%; transform: perspective(1100px) rotateY(calc(var(--px) * -10deg)) rotateX(calc(var(--py) * 9deg)); transition: transform .35s var(--ease); animation: bb-float 8s ease-in-out infinite; box-shadow: 0 50px 70px -28px rgba(0, 0, 0, .85), 0 0 90px -10px rgba(201, 164, 92, .18); }
+.medal::before { content: ""; position: absolute; inset: -13px; border-radius: 50%; z-index: 1; pointer-events: none;
+  background: conic-gradient(from 200deg, #6e5424, #e8cb8c, #9a7a38, #f6e2b0, #7a5e29, #d9b46a, #6e5424);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 12px), #000 calc(100% - 11px)); mask: radial-gradient(farthest-side, transparent calc(100% - 12px), #000 calc(100% - 11px)); }
+.medal__stitch { position: absolute; inset: -36px; border-radius: 50%; border: 2px dashed rgba(241, 234, 215, .42); animation: bb-spin 120s linear infinite; pointer-events: none; }
+@keyframes bb-spin { to { transform: rotate(360deg); } }
+.medal__face { position: absolute; inset: 0; border-radius: 50%; overflow: hidden; background: #0a2900; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .6); }
+.medal__face img { display: block; width: 100%; height: 100%; object-fit: cover; transform: scale(1.04) translate3d(calc(var(--px) * 7px), calc(var(--py) * 7px), 0); transition: transform .35s var(--ease); filter: saturate(.95) brightness(.97); }
+.medal__face::after { content: ""; position: absolute; inset: 0; border-radius: 50%; pointer-events: none; background: radial-gradient(circle at 50% 50%, transparent 58%, rgba(0, 0, 0, .5) 100%); }
+.medal__glare { position: absolute; inset: 0; z-index: 2; pointer-events: none; mix-blend-mode: screen; background: radial-gradient(circle at calc(50% - var(--px) * 38%) calc(38% - var(--py) * 38%), rgba(255, 233, 180, .34), rgba(255, 233, 180, 0) 46%); }
+@media (max-width: 860px) { .splash__art { width: min(74vw, 340px); justify-self: center; margin-top: 18px; } }
+@media (prefers-reduced-motion: reduce) { .medal, .medal__stitch, .splash__art { animation: none; } }
+
+/* tournaments: compact card, full regulations on click */
+.line.tour { display: block; padding: 0; }
+.tour__h { margin: 0; font-size: inherit; line-height: inherit; text-transform: none; letter-spacing: 0; word-spacing: 0; }
+.tour__head { display: grid; grid-template-columns: 100px minmax(0, 1fr) 44px; gap: 20px; align-items: center; width: 100%; padding: clamp(24px, 3.2vw, 38px) 0; background: none; border: 0; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.tour__main { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.tour__title { font-family: var(--serif); font-weight: 800; font-size: clamp(1.5rem, 3vw, 2.3rem); line-height: 1.08; letter-spacing: -.03em; text-transform: uppercase; color: var(--ink); transition: color .25s; overflow-wrap: anywhere; }
+.tour__more { font-size: .9375rem; color: var(--brass); font-weight: 500; }
+.tour__head:hover .tour__title { color: var(--brass); }
+.tour__plus { position: relative; width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(201, 164, 92, .5); transition: background .3s, border-color .3s, transform .4s var(--ease); }
+.tour__plus::before, .tour__plus::after { content: ""; position: absolute; left: 50%; top: 50%; width: 16px; height: 2px; margin: -1px 0 0 -8px; background: var(--cream); border-radius: 2px; transition: transform .4s var(--ease); }
+.tour__plus::after { transform: rotate(90deg); }
+.tour__head:hover .tour__plus { background: rgba(201, 164, 92, .16); border-color: var(--brass); }
+.tour.is-open .tour__plus::after { transform: rotate(0); }
+.tour.is-open .tour__plus { transform: rotate(180deg); }
+.tour__body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .5s var(--ease); }
+.tour.is-open .tour__body { grid-template-rows: 1fr; }
+.tour__inner { overflow: hidden; min-height: 0; padding-left: 120px; visibility: hidden; transition: visibility 0s .5s; }
+.tour.is-open .tour__inner { visibility: visible; transition-delay: 0s; padding-bottom: clamp(26px, 3vw, 40px); }
+.tour .line__info { max-width: 70ch; margin-top: 0; line-height: 1.65; }
+.tour .line__info p, .tour .line__info li { color: var(--slate); letter-spacing: 0; }
+.tour .line__info p { margin: 0 0 .9em; }
+.tour .line__info ul { margin: 0 0 1.1em; gap: .5em; }
+@media (max-width: 760px) { .tour__head { grid-template-columns: 56px minmax(0, 1fr) 40px; gap: 14px; } .tour__inner { padding-left: 0; } .tour__plus { width: 40px; height: 40px; } }
+@media (prefers-reduced-motion: reduce) { .tour__body, .tour__plus, .tour__plus::after { transition: none; } }
