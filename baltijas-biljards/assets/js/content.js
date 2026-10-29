@@ -288,10 +288,32 @@
 
   /* ---------- wiring ---------- */
   function renderAll() { renderProducts(); renderPrices(); renderGallery(); renderNews(); renderTournaments(); renderRules(); }
+  /* ---------- wording migration: texts saved earlier in the admin get the current wording ---------- */
+  var LEGACY = [
+    ['Русский бильярд (пирамида): свободная, комбинированная, московская и динамичная пирамида.', 'Пирамида: свободная, комбинированная и динамичная пирамида, а также многоборье.'],
+    ['Krievu biljards (piramīda): brīvā, kombinētā, moskviešu un dinamiskā piramīda.', 'Piramīda: brīvā, kombinētā un dinamiskā piramīda, kā arī daudzcīņa.'],
+    ['Russian billiards (pyramid): free, combined, Moscow and dynamic pyramid.', 'Pyramid: free, combined and dynamic pyramid, plus the all-around (multi-discipline) event.'],
+    ['(свободная, комбинированная, московская, динамичная)', '(свободная, комбинированная, динамичная, многоборье)'],
+    ['(brīvā, kombinētā, moskviešu, dinamiskā)', '(brīvā, kombinētā, dinamiskā, daudzcīņa)'],
+    ['(free, combined, Moscow, dynamic)', '(free, combined, dynamic, all-around)'],
+    ['Русский бильярд (пирамида)', 'Пирамида'], ['Krievu biljards (piramīda)', 'Piramīda'], ['Russian billiards (pyramid)', 'Pyramid'],
+    ['для русского бильярда', 'для пирамиды'], ['по русскому бильярду', 'по пирамиде'], ['Русский бильярд', 'Пирамида'], ['русский бильярд', 'пирамида'],
+    ['krievu biljardam', 'piramīdai'], ['krievu biljardā', 'piramīdā'], ['Krievu biljards', 'Piramīda'], ['krievu biljards', 'piramīda'],
+    ['Russian billiards', 'Pyramid'], ['russian billiards', 'pyramid']
+  ];
+  function fixText(s) { for (var i = 0; i < LEGACY.length; i++) { if (s.indexOf(LEGACY[i][0]) !== -1) s = s.split(LEGACY[i][0]).join(LEGACY[i][1]); } return s; }
+  function migrate(v, key) {
+    if (typeof v === 'string') return key === 'slots' ? v : fixText(v);
+    if (Array.isArray(v)) return v.map(function (x) { return migrate(x, key); });
+    if (v && typeof v === 'object') { var o = {}; Object.keys(v).forEach(function (k) { o[k] = k === 'slots' || k === 'link' || k === 'linkUrl' || k === 'img' || k === 'src' ? v[k] : migrate(v[k], k); }); return o; }
+    return v;
+  }
+  BB.migrate = function (c) { return c && typeof c === 'object' ? migrate(c, '') : c; };
+
   BB.renderAll = renderAll;
   document.addEventListener('langchange', renderAll);
   BB.apply = function (c) {
-    BB.content = c || {};
+    BB.content = BB.migrate(c || {});
     applySlots(BB.content.slots);
     applyHours(BB.content.hours);
     renderAll();

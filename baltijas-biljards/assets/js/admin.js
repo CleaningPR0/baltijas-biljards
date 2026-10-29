@@ -176,7 +176,7 @@
   }
   function loadContent() {
     return fetch('/api/content', { cache: 'no-store' }).then(function (r) { return r.json(); })
-      .then(function (c) { content = c && typeof c === 'object' ? c : { rev: 0 }; })
+      .then(function (c) { content = c && typeof c === 'object' ? c : { rev: 0 }; if (window.BB && BB.migrate) content = BB.migrate(content); })
       .catch(function () { content = { rev: 0 }; });
   }
 
