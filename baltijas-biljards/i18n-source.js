@@ -132,7 +132,7 @@ module.exports = {
   // ---------- tables ----------
   'tables.eyebrow': ['Spēles zāle', 'Игровой зал', 'Playing hall'],
   'tables.h1': ['Piramīda <em>vai</em> pūls', 'Пирамида <em>или</em> пул', 'Pyramid <em>or</em> pool'],
-  'tables.lead': ['Divas spēles, divi raksturi. Atšķirību vislabāk redz pie lūzas: piramīdā bumba tajā tik tikko ietilpst.', 'Две игры, два характера. Разницу лучше всего видно у лузы: в пирамиде шар в неё едва помещается.', 'Two games, two characters. The difference is clearest at the pocket: in pyramid the ball barely fits.'],
+  'tables.lead': ['Zaļa vadmala, pareizs apgaismojums un mājīgas atpūtas vietas starp partijām.', 'Зелёное сукно, правильный свет и уютные места для отдыха между партиями.', 'Green cloth, proper lighting and cosy places to rest between games.'],
   'pyr.h': ['Piramīda', 'Пирамида', 'Pyramid'],
   'pyr.count': ['9 galdi', '9 столов', '9 tables'],
   'pyr.p': ['Piramīda: garām — tikai tad, ja tā ir tīši.', 'Пирамида: мимо — только если специально.', 'Pyramid: you only miss on purpose.'],
