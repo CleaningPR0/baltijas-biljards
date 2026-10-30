@@ -21,7 +21,7 @@ module.exports = {
   'prices.note': ['Galdu vislabāk rezervēt iepriekš — pa tālruni.', 'Стол лучше бронировать заранее — по телефону.', 'It is best to book a table in advance — by phone.'],
   'gallery.eyebrow': ['Galerija', 'Галерея', 'Gallery'],
   'gallery.h1': ['Klubs <em>un</em> turnīri', 'Клуб <em>и</em> турниры', 'The club <em>and</em> tournaments'],
-  'gallery.lead': ['Foto no zāles un mūsu turnīriem.', 'Фото из зала и с наших турниров.', 'Photos from the hall and our tournaments.'],
+  'gallery.lead': ['Ieskaties — šeit mūsu biljarda dzīve: turnīri, emocijas un draudzīga atmosfēra.', 'Загляните, здесь наша бильярдная жизнь: турниры, эмоции и дружеская атмосфера.', 'Take a look — this is our billiards life: tournaments, emotions and a friendly atmosphere.'],
   'gallery.all': ['Visi', 'Все', 'All'],
   'gallery.club': ['Klubs', 'Клуб', 'Club'],
   'gallery.tournaments': ['Turnīri', 'Турниры', 'Tournaments'],
