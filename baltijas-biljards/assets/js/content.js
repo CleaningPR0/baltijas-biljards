@@ -24,9 +24,14 @@
   /* ---------- photos & logo ---------- */
   function applySlots(slots) {
     document.querySelectorAll('[data-slot]').forEach(function (box) {
-      var url = slots && slots[box.getAttribute('data-slot')];
-      if (!url) return;
+      var key = box.getAttribute('data-slot');
+      var url = slots && (slots[key + '.' + BB.lang] || slots[key]);   /* per-language photo first, then the common one */
       var im = box.querySelector('img');
+      if (box._src0 === undefined) box._src0 = im ? im.getAttribute('src') : '';
+      if (!url) {
+        if (box._custom && im && box._src0) { im.src = box._src0; box._custom = false; }
+        return;
+      }
       if (!im) {
         im = document.createElement('img');
         im.alt = ''; im.loading = 'lazy'; im.decoding = 'async';
@@ -35,6 +40,7 @@
       }
       im.removeAttribute('onerror');
       im.src = url;
+      box._custom = true;
     });
     if (slots && slots.logo) document.querySelectorAll('.brand__logo, [data-medal-logo]').forEach(function (i) { i.src = slots.logo; });
     var logo = document.querySelector('[data-logo]');
@@ -311,7 +317,7 @@
   BB.migrate = function (c) { return c && typeof c === 'object' ? migrate(c, '') : c; };
 
   BB.renderAll = renderAll;
-  document.addEventListener('langchange', renderAll);
+  document.addEventListener('langchange', function () { renderAll(); applySlots(BB.content && BB.content.slots); });
   BB.apply = function (c) {
     BB.content = BB.migrate(c || {});
     applySlots(BB.content.slots);

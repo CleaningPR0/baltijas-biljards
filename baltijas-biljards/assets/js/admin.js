@@ -316,7 +316,7 @@
       var src = cur || s.img;
       var isLogo = s.key === 'logo';
       append(grid, h('div', { class: 'bba-card' },
-        h('div', { class: 'bba-thumb' + (isLogo ? ' bba-thumb--logo' : '') }, src ? h('img', { src: src, alt: '', loading: 'lazy' }) : emptyImg('Стандартный логотип (круг с цифрой 1)')),
+        h('div', { class: 'bba-thumb' + (isLogo ? ' bba-thumb--logo' : '') }, src ? h('img', { src: src, alt: '', loading: 'lazy' }) : emptyImg(isLogo ? 'Стандартный логотип (круг с цифрой 1)' : (/\.(lv|ru|en)$/.test(s.key) ? 'Не загружено: на этом языке покажется общее фото' : 'Нет фото'))),
         h('div', { class: 'bba-card__b' },
           h('strong', { text: parts.slice(1).join(' — ') || s.label }),
           cur ? h('span', { class: 'bba-badge', text: 'ваше фото' }) : null,
