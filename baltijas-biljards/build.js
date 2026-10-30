@@ -326,6 +326,70 @@ const posterCard = (href, titleKey, textKey, photo) => `
   <div class="poster__media">${ph(photo, 'poster__img')}<span class="poster__go">${ICON.arrow}</span></div>
 </a>`;
 
+// ------------------------------------------------------------------ illustrated stat cards (top-down tables, parking sign)
+const POOL_COLORS = ['#f2c230', '#2a56b8', '#cc2f2f', '#5b2d83', '#e8761f', '#1f8a4c', '#7a1f1f', '#17181a', '#f2c230', '#2a56b8'];
+const STAT_DEFS = `<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+  <linearGradient id="g-wood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a5526"/><stop offset=".5" stop-color="#5e3617"/><stop offset="1" stop-color="#3a200d"/></linearGradient>
+  <radialGradient id="g-cloth" cx=".5" cy=".42" r=".8"><stop offset="0" stop-color="#2a8a55"/><stop offset=".7" stop-color="#15603a"/><stop offset="1" stop-color="#0c3f26"/></radialGradient>
+  <radialGradient id="g-cloth2" cx=".5" cy=".42" r=".8"><stop offset="0" stop-color="#2b8f78"/><stop offset=".7" stop-color="#16665a"/><stop offset="1" stop-color="#0c4238"/></radialGradient>
+  <linearGradient id="g-blue" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a6cb8"/><stop offset="1" stop-color="#143f74"/></linearGradient>
+  <radialGradient id="g-ivory" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#ffffff"/><stop offset=".55" stop-color="#f1ead4"/><stop offset="1" stop-color="#bdb394"/></radialGradient>
+  <linearGradient id="g-brass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6e2b0"/><stop offset=".5" stop-color="#c9a45c"/><stop offset="1" stop-color="#7a5a24"/></linearGradient>
+  <linearGradient id="g-cue" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3b200d"/><stop offset=".55" stop-color="#b98a45"/><stop offset="1" stop-color="#f3e2b8"/></linearGradient>
+  <linearGradient id="g-sign" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2f78d6"/><stop offset="1" stop-color="#14438a"/></linearGradient>
+  <linearGradient id="g-steel" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8b949a"/><stop offset=".5" stop-color="#d3d9dc"/><stop offset="1" stop-color="#6c767c"/></linearGradient>
+  <radialGradient id="g-paddle" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#e5483b"/><stop offset="1" stop-color="#8f1a14"/></radialGradient>
+  ${POOL_COLORS.map((c, i) => `<radialGradient id="g-b${i}" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="${c}" stop-opacity=".55"/><stop offset=".08" stop-color="${c}"/><stop offset="1" stop-color="${c}"/></radialGradient>`).join('')}
+  <filter id="f-sh" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="1.2" dy="2.4" stdDeviation="1.8" flood-color="#000" flood-opacity=".5"/></filter>
+</defs></svg>`;
+const STAT_ART = (() => {
+  const svg = (vb, inner) => `<svg viewBox="${vb}" aria-hidden="true" focusable="false">${inner}</svg>`;
+  const ball = (cx, cy, r, fill, n, disc, extra = '') => {
+    const dx = (((n * 37) % 11) - 5) * 1.7, dy = (((n * 53) % 13) - 6) * 1.5;
+    return `<g class="b" style="--i:${n};--dx:${dx.toFixed(1)};--dy:${dy.toFixed(1)}" ${extra}><circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" filter="url(#f-sh)"/>${disc ? `<circle cx="${cx}" cy="${cy}" r="${(r * .42).toFixed(2)}" fill="#f6f3e8"/>` : ''}<ellipse cx="${(cx - r * .36).toFixed(2)}" cy="${(cy - r * .42).toFixed(2)}" rx="${(r * .3).toFixed(2)}" ry="${(r * .18).toFixed(2)}" fill="#fff" opacity=".72" transform="rotate(-30 ${(cx - r * .36).toFixed(2)} ${(cy - r * .42).toFixed(2)})"/></g>`;
+  };
+  const rack = (ax, ay, rows, r, colored) => {
+    let s = '', n = 0; const sx = r * 1.75, sy = r * 2.04;
+    for (let k = 0; k < rows; k++) for (let j = 0; j <= k; j++) {
+      const cx = ax + k * sx, cy = ay + (j - k / 2) * sy;
+      s += ball(cx.toFixed(1), cy.toFixed(1), r, colored ? `url(#g-b${n % 10})` : 'url(#g-ivory)', n + 1, colored);
+      n++;
+    }
+    return s;
+  };
+  const diamonds = (x1, x2, y, k) => Array.from({ length: k }, (_, i) => `<circle cx="${(x1 + (x2 - x1) * (i + 1) / (k + 1)).toFixed(1)}" cy="${y}" r="2.1" fill="url(#g-brass)"/>`).join('');
+  const table = ({ cloth, pr, colored, rows }) => `
+    <rect x="8" y="8" width="404" height="224" rx="20" fill="url(#g-wood)" stroke="#1c0f05" stroke-width="1.5"/>
+    <rect x="12" y="12" width="396" height="216" rx="17" fill="none" stroke="#b27a3d" stroke-opacity=".45" stroke-width="1"/>
+    ${diamonds(60, 360, 21, 7)}${diamonds(60, 360, 219, 7)}${[1, 2, 3].map((i) => `<circle cx="20" cy="${(20 + 200 * i / 4).toFixed(1)}" r="2.1" fill="url(#g-brass)"/><circle cx="400" cy="${(20 + 200 * i / 4).toFixed(1)}" r="2.1" fill="url(#g-brass)"/>`).join('')}
+    <rect x="30" y="30" width="360" height="180" rx="7" fill="#07281a"/>
+    <rect x="38" y="38" width="344" height="164" rx="3" fill="url(#${cloth})"/>
+    ${[[38, 38], [382, 38], [38, 202], [382, 202], [210, 36], [210, 204]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="${pr + 2}" fill="url(#g-brass)"/><circle cx="${x}" cy="${y}" r="${pr}" fill="#040806"/>`).join('')}
+    <line x1="120" y1="40" x2="120" y2="200" stroke="#fff" stroke-opacity=".1" stroke-width="1"/>
+    <circle cx="272" cy="110" r="1.6" fill="#fff" fill-opacity=".35"/>
+    <g class="rk">${rack(272, 110, rows, 6.5, colored)}</g>
+    <g class="cue"><line x1="-14" y1="141" x2="96" y2="128.4" stroke="url(#g-cue)" stroke-width="5.4" stroke-linecap="round" filter="url(#f-sh)"/><line x1="92" y1="128.9" x2="97" y2="128.3" stroke="#6aa0cc" stroke-width="5.4" stroke-linecap="round"/><line x1="82" y1="130" x2="86" y2="129.6" stroke="url(#g-brass)" stroke-width="5.6"/></g>
+    <g class="cb">${ball(104, 127, 6.5, 'url(#g-ivory)', 0, false)}</g>`;
+  return {
+    pyr: svg('-16 0 436 240', table({ cloth: 'g-cloth', pr: 8.5, colored: false, rows: 5 })),
+    pool: svg('-16 0 436 240', table({ cloth: 'g-cloth2', pr: 11, colored: true, rows: 4 })),
+    tt: svg('0 0 420 240', `
+      <rect x="14" y="30" width="392" height="184" rx="6" fill="#0b2a50" opacity=".55" transform="translate(0 7)"/>
+      <rect x="14" y="30" width="392" height="184" rx="6" fill="url(#g-blue)" stroke="#0a2a52" stroke-width="2"/>
+      <rect x="20" y="36" width="380" height="172" rx="3" fill="none" stroke="#f4f0e2" stroke-width="3"/>
+      <line x1="20" y1="122" x2="400" y2="122" stroke="#f4f0e2" stroke-width="1.8"/>
+      <g class="net"><rect x="206" y="22" width="8" height="200" rx="2" fill="#fff" fill-opacity=".28" stroke="#fff" stroke-opacity=".85" stroke-width="1"/><line x1="210" y1="24" x2="210" y2="220" stroke="#fff" stroke-opacity=".7" stroke-width="3" stroke-dasharray="1.4 2.6"/><circle cx="210" cy="20" r="6" fill="#1b1d1f"/><circle cx="210" cy="226" r="6" fill="#1b1d1f"/></g>
+      <g class="pad" filter="url(#f-sh)"><line x1="366" y1="88" x2="392" y2="128" stroke="#9a6a34" stroke-width="13" stroke-linecap="round"/><line x1="366" y1="88" x2="392" y2="128" stroke="#c99a5c" stroke-width="3" stroke-linecap="round" opacity=".55"/><circle cx="346" cy="62" r="32" fill="url(#g-paddle)" stroke="#2a0c09" stroke-width="3"/><circle cx="346" cy="62" r="25" fill="none" stroke="#fff" stroke-opacity=".12" stroke-width="1.2"/><ellipse cx="335" cy="50" rx="11" ry="7" fill="#fff" opacity=".16" transform="rotate(-35 335 50)"/></g>
+      <g class="tball" filter="url(#f-sh)"><circle cx="128" cy="104" r="7.5" fill="url(#g-ivory)"/></g>`),
+    park: svg('0 0 240 250', `
+      <ellipse cx="120" cy="238" rx="64" ry="7" fill="#000" opacity=".5"/>
+      <rect x="114" y="140" width="12" height="98" rx="3" fill="url(#g-steel)"/>
+      <rect x="104" y="232" width="32" height="8" rx="3" fill="url(#g-steel)"/>
+      <g class="sgn" filter="url(#f-sh)"><rect x="34" y="6" width="172" height="156" rx="18" fill="url(#g-sign)"/><rect x="43" y="15" width="154" height="138" rx="11" fill="none" stroke="#fff" stroke-width="5"/>
+        <path d="M94 128 V42 H128 a31 31 0 0 1 0 62 H94" fill="none" stroke="#fff" stroke-width="19" stroke-linejoin="miter"/><path d="M40 20 L120 12 L40 70 Z" fill="#fff" opacity=".08"/></g>`),
+  };
+})();
+
 // ------------------------------------------------------------------ pages
 const pages = [];
 
@@ -372,11 +436,12 @@ ${(()=>{const l=[1,2,4,5,6,7,8].map(i=>`<li>${t('mq.'+i)}</li>`).join('');return
 
 <section class="numbers">
   <div class="container">
+    ${STAT_DEFS}
     <ul class="nums">
-      <li class="reveal"><b data-count="9">9</b>${t('stat.pyramid')}</li>
-      <li class="reveal"><b data-count="6">6</b>${t('stat.pool')}</li>
-      <li class="reveal"><b data-count="1">1</b>${t('stat.tt')}</li>
-      <li class="reveal"><b>P</b>${t('stat.park')}</li>
+      <li class="stat stat--pyr reveal"><div class="stat__art">${STAT_ART.pyr}</div><div class="stat__txt"><b data-count="9">9</b><span>${t('stat.pyramid')}</span></div></li>
+      <li class="stat stat--pool reveal"><div class="stat__art">${STAT_ART.pool}</div><div class="stat__txt"><b data-count="6">6</b><span>${t('stat.pool')}</span></div></li>
+      <li class="stat stat--tt reveal"><div class="stat__art">${STAT_ART.tt}</div><div class="stat__txt"><b data-count="1">1</b><span>${t('stat.tt')}</span></div></li>
+      <li class="stat stat--park reveal"><div class="stat__art">${STAT_ART.park}</div><div class="stat__txt"><strong class="stat__big">${t('stat.park')}</strong></div></li>
     </ul>
   </div>
 </section>
@@ -642,7 +707,7 @@ ${pageHero('rules.eyebrow', 'rules.h1', 'rules.lead')}
     </div>
   </div>
 </section>
-${ctaBand('home.cta.h', 'home.cta.p', btn('turniri.html', 'nav.tournaments', 'ghost', ICON.arrow))}`,
+${ctaBand('rules.cta.h', 'rules.cta.p', btn('turniri.html', 'nav.tournaments', 'ghost', ICON.arrow))}`,
 });
 
 pages.push({
