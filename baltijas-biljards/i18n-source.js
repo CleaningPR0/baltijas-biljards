@@ -18,6 +18,7 @@ module.exports = {
   'prices.on_request': ['Cenu precizē pa tālruni', 'Цену уточняйте по телефону', 'Ask for the price by phone'],
   'prices.vip': ['VIP zāle', 'VIP зал', 'VIP room'],
   'prices.vip.note': ['1 galds VIP zālē', '1 стол в VIP зале', '1 table in the VIP room'],
+  'prices.disc': ['Pastāvīgajiem klientiem — atlaide līdz 30%.', 'Для постоянных клиентов — скидка до 30%.', 'Regular customers get a discount of up to 30%.'],
   'prices.note': ['Galdu vislabāk rezervēt iepriekš — pa tālruni.', 'Стол лучше бронировать заранее — по телефону.', 'It is best to book a table in advance — by phone.'],
   'gallery.eyebrow': ['Galerija', 'Галерея', 'Gallery'],
   'gallery.h1': ['Klubs <em>un</em> turnīri', 'Клуб <em>и</em> турниры', 'The club <em>and</em> tournaments'],

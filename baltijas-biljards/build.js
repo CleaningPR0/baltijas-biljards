@@ -658,6 +658,7 @@ ${pageHero('prices.eyebrow', 'prices.h1', 'prices.lead')}
 <section class="section section--flush">
   <div class="container">
     <div class="pgroups" id="price-groups">${PRICE_DEFAULTS.map(priceGroup).join('')}</div>
+    ${el('p', 'prices.disc', 'note note--disc reveal')}
     ${el('p', 'prices.note', 'note reveal')}
   </div>
 </section>
