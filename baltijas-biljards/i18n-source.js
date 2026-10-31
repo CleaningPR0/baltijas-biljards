@@ -160,7 +160,7 @@ module.exports = {
   'faq.q2': ['Nekad neesmu spēlējis. Vai drīkstu nākt?', 'Я никогда не играл. Можно прийти?', 'I have never played. May I come?'],
   'faq.a2': ['Jā. Klubā spēlē gan sportisti, gan iesācēji, un piramīdas skolā nodarbības notiek bērniem un pieaugušajiem.', 'Да. В клубе играют и спортсмены, и новички, а в школе пирамиды занятия проходят для детей и взрослых.', 'Yes. Both athletes and beginners play at the club, and the billiards school runs lessons for children and adults.'],
   'faq.q3': ['Kur novietot auto?', 'Где оставить машину?', 'Where can I park?'],
-  'faq.a3': ['Pie kluba ir liela atklāta autostāvvieta.', 'Рядом с клубом большая открытая парковка.', 'There is a large open car park by the club.'],
+  'faq.a3': ['Pie kluba ir liela atklāta autostāvvieta — 50 vietām.', 'Рядом с клубом большая открытая парковка — на 50 мест.', 'There is a large open car park by the club — 50 spaces.'],
   'faq.q4': ['Kā pieteikties turnīram?', 'Как записаться на турнир?', 'How do I enter a tournament?'],
   'faq.a4': ['Turnīru kalendārs un reģistrācija ir TournamentService platformā: tournamentservice.net.', 'Календарь турниров и регистрация — на платформе TournamentService: tournamentservice.net.', 'The tournament calendar and registration are on the TournamentService platform: tournamentservice.net.'],
 
@@ -197,7 +197,7 @@ module.exports = {
   // ---------- school ----------
   'school.eyebrow': ['Biljarda skola', 'Школа бильярда', 'Billiards school'],
   'school.h1': ['Pirmie soļi pie <em>biljarda</em> galda', 'Первые шаги у <em>бильярдного</em> стола', 'First steps at the <em>billiard</em> table'],
-  'school.lead': ['Klubā strādā 4 biljarda treneri. Nodarbības notiek gan bērniem, gan pieaugušajiem — individuāli vai grupā, gan piramīdā, gan pūlā.', 'В клубе работают 4 тренера по бильярду. Занятия проходят и для детей, и для взрослых — индивидуально или в группе, как по пирамиде, так и по пулу.', 'The club has 4 billiards coaches. Lessons are for both children and adults — one-to-one or in a group, in both pyramid and pool.'],
+  'school.lead': ['Klubā strādā 4 biljarda treneri. Nodarbības notiek bērniem un pieaugušajiem — individuāli vai grupā, gan piramīdā, gan pūlā.', 'В клубе работают 4 тренера по бильярду. Занятия проходят для детей и взрослых — индивидуально или в группе, как по пирамиде, так и по пулу.', 'The club has 4 billiards coaches. Lessons are for children and adults — one-to-one or in a group, in both pyramid and pool.'],
   'school.apply': ['Pieteikties nodarbībām', 'Записаться на занятия', 'Sign up for lessons'],
   'school.l1.h': ['4 treneri klubā', '4 тренера в клубе', '4 coaches at the club'],
   'school.l1.p': ['Nodarbības vada četri biljarda treneri tieši mūsu klubā.', 'Занятия ведут четыре тренера по бильярду прямо в нашем клубе.', 'Four billiards coaches teach right here at our club.'],
