@@ -749,3 +749,27 @@ body { letter-spacing: 0; word-spacing: .03em; }
 
 .note--disc { margin-top: 26px; font-family: var(--serif); font-weight: 800; font-size: clamp(1.15rem, 2vw, 1.5rem); letter-spacing: -.02em; color: var(--brass); }
 .note--disc + .note { margin-top: 8px; }
+
+
+/* ==========================================================
+   v24 — compact one-row stat cards, no card animation
+   ========================================================== */
+.nums { grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-areas: none; gap: clamp(10px, 1.4vw, 18px); }
+.nums li.stat .stat__art svg, .nums li.stat .b, .nums li.stat .cb, .nums li.stat .cue, .nums li.stat .pad, .nums li.stat .tball, .nums li.stat .sgn, .nums li.stat { animation: none !important; transition: none !important; }
+.nums li.stat:hover .cb, .nums li.stat:hover .cue, .nums li.stat:hover .pad, .nums li.stat:hover .tball, .nums li.stat:hover .sgn, .nums li.stat:hover .rk .b { transform: none !important; }
+.js .nums li.stat.reveal, .nums li.stat.reveal { opacity: 1; transform: none; }
+.js .stat:not(.is-in) .stat__art svg { opacity: 1; }
+.nums li.stat, .nums li.stat:first-child { padding: clamp(14px, 1.6vw, 22px); border-radius: 18px; }
+.nums li.stat:hover { border-color: rgba(201, 164, 92, .22); }
+.stat--pyr, .stat--pool, .stat--tt, .stat--park { grid-area: auto; }
+.nums li.stat--park { flex-direction: column !important; align-items: stretch; gap: 0; }
+.nums .stat__art, .nums .stat--pyr .stat__art, .nums .stat--pool .stat__art, .nums .stat--tt .stat__art, .nums .stat--park .stat__art { width: auto; height: clamp(84px, 9vw, 128px); margin: 0 0 clamp(10px, 1.4vw, 16px); padding: 0; display: flex; align-items: center; justify-content: center; }
+.nums .stat__art svg { width: 100%; height: 100%; filter: drop-shadow(0 10px 10px rgba(0, 0, 0, .5)); }
+.nums .stat__txt, .nums .stat--pyr .stat__txt { flex-direction: column; align-items: flex-start; gap: 4px; margin-top: auto; }
+.nums .stat b, .nums .stat--pyr b { font-size: clamp(2.4rem, 4.2vw, 3.4rem); line-height: .9; background: none; -webkit-background-clip: border-box; background-clip: border-box; color: var(--ink); padding: 0; }
+.nums .stat .stat__txt > span, .nums .stat--pyr .stat__txt > span { font-size: clamp(.9rem, 1.1vw, 1rem); padding: 0; max-width: none; line-height: 1.25; }
+.nums .stat--park .stat__txt { margin-top: auto; }
+.stat__big { font-size: clamp(.9rem, 1.35vw, 1.15rem); line-height: 1.12; }
+@media (max-width: 900px) { .nums { grid-template-columns: 1fr 1fr; grid-template-areas: none; } .nums .stat__art { height: clamp(90px, 22vw, 130px); } }
+
+.nums .stat--pool .stat__art svg, .nums .stat--tt .stat__art svg { transform: scale(.84); }
