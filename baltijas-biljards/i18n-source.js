@@ -219,7 +219,7 @@ module.exports = {
   // ---------- shop ----------
   'shop.eyebrow': ['Veikals', 'Магазин', 'Shop'],
   'shop.h1': ['Kluba <em>ekipējums</em>', 'Клубная <em>экипировка</em>', 'Club <em>equipment</em>'],
-  'shop.lead': ['Viss spēlei — ar Baltijas Biljards Nr.1 zīmi. Preces var iegādāties tikai klātienē, apmeklējot klubu. Internetā mēs nepārdodam.', 'Всё для игры — с символикой Baltijas Biljards Nr.1. Товары можно купить только при посещении клуба. Онлайн мы ничего не продаём.', 'Everything for the game — with the Baltijas Biljards Nr.1 mark. Items can only be bought in person at the club. We do not sell online.'],
+  'shop.lead': ['Viss spēlei — ar Baltijas Biljards Nr.1 zīmi. Preces var iegādāties tikai klātienē, apmeklējot klubu.', 'Всё для игры — с символикой Baltijas Biljards Nr.1. Товары можно купить только при посещении клуба.', 'Everything for the game — with the Baltijas Biljards Nr.1 mark. Items can only be bought in person at the club.'],
   'shop.p1.h': ['Krīts Nr.1', 'Мел Nr.1', 'Chalk Nr.1'],
   'shop.p1.p': ['Smalkgraudains krīts drošai uzlīmes saķerei ar bumbu.', 'Мелкозернистый мел для надёжного сцепления наклейки с шаром.', 'Fine-grain chalk for a secure grip between the tip and the ball.'],
   'shop.p2.h': ['Kija piramīdai', 'Кий для пирамиды', 'Pyramid cue'],
