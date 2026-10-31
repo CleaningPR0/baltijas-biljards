@@ -447,9 +447,9 @@ ${(()=>{const l=[1,2,4,5,6,7,8].map(i=>`<li>${t('mq.'+i)}</li>`).join('');return
   <div class="container">
     ${STAT_DEFS}
     <ul class="nums">
-      <li class="stat stat--pyr reveal"><div class="stat__art">${STAT_ART.pyr}</div><div class="stat__txt"><b data-count="9">9</b><span>${t('stat.pyramid')}</span></div></li>
-      <li class="stat stat--pool reveal"><div class="stat__art">${STAT_ART.pool}</div><div class="stat__txt"><b data-count="6">6</b><span>${t('stat.pool')}</span></div></li>
-      <li class="stat stat--tt reveal"><div class="stat__art">${STAT_ART.tt}</div><div class="stat__txt"><b data-count="1">1</b><span>${t('stat.tt')}</span></div></li>
+      <li class="stat stat--pyr reveal"><div class="stat__art">${STAT_ART.pyr}</div><div class="stat__txt"><b>9</b><span>${t('stat.pyramid')}</span></div></li>
+      <li class="stat stat--pool reveal"><div class="stat__art">${STAT_ART.pool}</div><div class="stat__txt"><b>6</b><span>${t('stat.pool')}</span></div></li>
+      <li class="stat stat--tt reveal"><div class="stat__art">${STAT_ART.tt}</div><div class="stat__txt"><b>1</b><span>${t('stat.tt')}</span></div></li>
       <li class="stat stat--park reveal"><div class="stat__art">${STAT_ART.park}</div><div class="stat__txt"><strong class="stat__big">${t('stat.park')}</strong></div></li>
     </ul>
   </div>
