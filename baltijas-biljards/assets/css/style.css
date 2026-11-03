@@ -773,3 +773,9 @@ body { letter-spacing: 0; word-spacing: .03em; }
 @media (max-width: 900px) { .nums { grid-template-columns: 1fr 1fr; grid-template-areas: none; } .nums .stat__art { height: clamp(90px, 22vw, 130px); } }
 
 .nums .stat--pool .stat__art svg, .nums .stat--tt .stat__art svg { transform: scale(.84); }
+
+/* v25: page-hero photo (e.g. school coaches banner) shows whole, never cropped */
+.frame--static { aspect-ratio: auto; background: transparent; }
+.frame--static .frame__in { position: relative; inset: auto; display: block; }
+.frame--static .frame__in > img { position: static; width: 100%; height: auto; max-height: none; object-fit: contain; transform: none; display: block; }
+@media (max-width: 768px) { .frame--static { aspect-ratio: auto; width: 100%; } }
