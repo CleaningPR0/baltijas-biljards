@@ -86,7 +86,7 @@
     box.innerHTML = list.map(function (p) {
       var price = money(p.price);
       return '<article class="pcard reveal is-in">' +
-        '<div class="pcard__img">' + (p.img ? '' : '<span class="pcard__icon">' + BALL_ICON + '</span>') +
+        '<div class="pcard__img"' + (p.img ? ' style="--bg:url(&quot;' + esc(p.img) + '&quot;)"' : '') + '>' + (p.img ? '' : '<span class="pcard__icon">' + BALL_ICON + '</span>') +
         (p.img ? '<div class="ph pcard__ph"><img src="' + esc(p.img) + '" alt="' + esc(pick(p.name, BB.lang)) + '" loading="lazy" decoding="async" onerror="this.parentNode.classList.add(\'is-empty\');this.remove()"></div>' : '') +
         '</div>' +
         '<h2 class="h3">' + esc(pick(p.name, BB.lang)) + '</h2>' +
