@@ -11,6 +11,7 @@
 // Default credentials are stored only as a salted SHA-256 hash. Override with the environment
 // variables ADMIN_LOGIN and ADMIN_PASSWORD (recommended), and set ADMIN_SECRET to any long random string.
 import crypto from 'node:crypto';
+import { refreshTS } from './ts.mjs';
 
 const SALT = 'bb-v1';
 const hashCreds = (login, pass) => crypto.createHash('sha256').update(`${SALT}|${login}|${pass}`).digest('hex');
@@ -167,6 +168,16 @@ export async function handle(req, { store, env = {} }) {
     if (m === 'GET' && p === '/content') {
       const c = (await store.getJSON('content')) || { rev: 0 };
       return J(c, 200, { 'cache-control': 'public, max-age=0, must-revalidate' });
+    }
+    if (m === 'GET' && p === '/ts') {
+      // club tournaments mirrored from TournamentService (refreshed at most once per hour, stale data kept on errors)
+      const now = Date.now();
+      let c = (await store.getJSON('ts')) || { fetched: 0, tried: 0, items: [] };
+      if (now - c.fetched > 3600e3 && now - (c.tried || 0) > 300e3) {
+        try { c = await refreshTS(c, now); await store.setJSON('ts', c); }
+        catch (e) { console.error('ts refresh failed', e && e.message); c = { ...c, tried: now }; try { await store.setJSON('ts', c); } catch { /* ignore */ } }
+      }
+      return J({ items: c.items || [], fetched: c.fetched || 0 }, 200, { 'cache-control': 'public, max-age=300' });
     }
     if (m === 'GET' && p.startsWith('/img/')) {
       const id = p.slice(5);
