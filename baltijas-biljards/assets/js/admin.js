@@ -229,7 +229,7 @@
       LANGS.map(function (l) {
         return h('button', { type: 'button', 'data-l': l[0], class: l[0] === editLang ? 'is-on' : '', onclick: function () { editLang = l[0]; langBar.querySelectorAll('button').forEach(function (b) { b.classList.toggle('is-on', b.getAttribute('data-l') === editLang); }); renderTab(); } }, l[1]);
       }));
-    var tabs = [['photos', 'Фото'], ['news', 'Новости'], ['tournaments', 'Турниры'], ['rules', 'Правила'], ['shop', 'Магазин'], ['gallery', 'Галерея'], ['prices', 'Прайс-лист'], ['settings', 'Настройки']];
+    var tabs = [['photos', 'Фото'], ['news', 'Новости'], ['tournaments', 'Турниры'], ['rules', 'Правила'], ['shop', 'Магазин'], ['gallery', 'Галерея'], ['prices', 'Прайс-лист'], ['cards', 'Клубные карты'], ['settings', 'Настройки']];
     var side = h('nav', { class: 'bba-side' }, tabs.map(function (t) {
       return h('button', { type: 'button', 'data-t': t[0], class: 'bba-tab' + (t[0] === tab ? ' is-on' : ''), onclick: function () { tab = t[0]; side.querySelectorAll('.bba-tab').forEach(function (b) { b.classList.toggle('is-on', b.getAttribute('data-t') === tab); }); renderTab(); } }, t[1]);
     }));
@@ -259,7 +259,7 @@
     if (!mainEl) return;
     var st = mainEl.scrollTop;
     mainEl.innerHTML = '';
-    ({ photos: renderPhotos, news: renderNews, tournaments: renderTournaments, rules: renderRules, shop: renderShop, gallery: renderGallery, prices: renderPrices, settings: renderSettings })[tab](mainEl);
+    ({ photos: renderPhotos, news: renderNews, tournaments: renderTournaments, rules: renderRules, shop: renderShop, gallery: renderGallery, prices: renderPrices, cards: renderCards, settings: renderSettings })[tab](mainEl);
     mainEl.scrollTop = st;
   }
 
@@ -607,6 +607,194 @@
             list.splice(i, 1); scheduleSave(); renderTab();
           } }, 'Удалить'))));
     });
+  }
+
+  /* ---------- tab: club cards (private data, own endpoint) ---------- */
+  var cardsData = null; // { rev, cards: [] }
+  var cardQuery = '';
+  var TIERS = ['Платина', 'Золото', 'Серебро', 'Бронза'];
+  function tierClass(t) {
+    t = String(t || '').toLowerCase();
+    if (/плат|plat/.test(t)) return 'plat';
+    if (/зол|gold|zelt/.test(t)) return 'gold';
+    if (/сереб|silver|sudrab/.test(t)) return 'silver';
+    if (/бронз|bronz/.test(t)) return 'bronze';
+    return 'dark';
+  }
+  function balanceOf(c) { return (c.log || []).reduce(function (a, l) { return a + (l.min || 0); }, 0); }
+  function fmtH(min) {
+    var neg = min < 0, v = Math.abs(min) / 60;
+    var t = (Math.round(v * 100) / 100).toString().replace('.', ',');
+    return (neg ? '−' : '') + t;
+  }
+  function fmtDate(ts) { try { return new Date(ts).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } }
+  function parseHours(v) { var n = parseFloat(String(v).replace(',', '.')); return isFinite(n) ? Math.round(n * 60) : NaN; }
+
+  function loadCards() {
+    return api('/admin/cards').then(function (d) { cardsData = { rev: d.rev || 0, cards: d.cards || [] }; });
+  }
+  async function saveCards() {
+    setStatus('Сохранение…', 'busy');
+    try {
+      var r = await api('/admin/cards', { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ rev: cardsData.rev, cards: cardsData.cards }) });
+      cardsData.rev = r.rev; // keep local card objects (open dialogs hold references to them)
+      setStatus('Сохранено ✓', 'ok');
+      return true;
+    } catch (e) {
+      if (e.status === 409) {
+        setStatus('Конфликт данных', 'err');
+        alert('Карты уже изменили на другом устройстве. Данные обновлены — повторите действие.');
+        await loadCards();
+        if (tab === 'cards') renderTab();
+      } else if (e.message !== 'unauthorized') { setStatus('Ошибка сохранения: ' + e.message, 'err'); alert('Не удалось сохранить: ' + e.message); }
+      return false;
+    }
+  }
+  function cardVisual(c) {
+    var bal = balanceOf(c);
+    return h('div', { class: 'bbc bbc--' + tierClass(c.tier) },
+      h('div', { class: 'bbc__top' }, h('span', { class: 'bbc__tier', text: c.tier || 'Карта' }), h('span', { class: 'bbc__logo', text: 'Baltijas Biljards Nr.1' })),
+      h('div', { class: 'bbc__bal' }, h('b', { text: fmtH(bal) }), h('span', { text: 'ч осталось' })),
+      h('div', { class: 'bbc__bot' }, h('strong', { text: c.name || 'Без имени' }), h('span', { text: c.phone || '' })));
+  }
+  function renderCards(main) {
+    append(main, h('h2', { class: 'bba-h1', text: 'Клубные карты' }));
+    append(main, h('p', { class: 'bba-hint', text: 'У каждого владельца своя карточка: тариф, имя, телефон и остаток часов. После тренировки откройте карточку и спишите часы. Эти данные хранятся закрыто и на сайте не показываются.' }));
+    if (!cardsData) {
+      append(main, h('p', { class: 'bba-hint', text: 'Загрузка…' }));
+      loadCards().then(function () { if (tab === 'cards') renderTab(); }).catch(function (e) { if (e.message !== 'unauthorized') append(main, h('p', { class: 'bba-empty', text: 'Не удалось загрузить: ' + e.message })); });
+      return;
+    }
+    var search = h('input', { class: 'bba-in', type: 'search', placeholder: 'Поиск по имени или телефону', value: cardQuery });
+    var gridWrap = h('div');
+    function draw() {
+      gridWrap.innerHTML = '';
+      var q = cardQuery.trim().toLowerCase(), qd = q.replace(/\D/g, '');
+      var list = cardsData.cards.filter(function (c) {
+        if (!q) return true;
+        return (c.name || '').toLowerCase().indexOf(q) > -1 || (c.tier || '').toLowerCase().indexOf(q) > -1 || (qd && (c.phone || '').replace(/\D/g, '').indexOf(qd) > -1);
+      });
+      var total = cardsData.cards.reduce(function (a, c) { return a + balanceOf(c); }, 0);
+      append(gridWrap, h('p', { class: 'bba-muted', text: 'Карт: ' + cardsData.cards.length + ' · всего часов на картах: ' + fmtH(total) }));
+      if (!list.length) { append(gridWrap, h('p', { class: 'bba-empty', text: cardsData.cards.length ? 'Ничего не найдено.' : 'Карт пока нет. Нажмите «Новая карта».' })); return; }
+      var grid = h('div', { class: 'bbc-grid' });
+      list.forEach(function (c) {
+        var v = cardVisual(c);
+        v.tabIndex = 0; v.setAttribute('role', 'button');
+        v.addEventListener('click', function () { openCard(c.id); });
+        v.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openCard(c.id); } });
+        append(grid, v);
+      });
+      append(gridWrap, grid);
+    }
+    search.addEventListener('input', function () { cardQuery = search.value; draw(); });
+    append(main, h('div', { class: 'bba-bar' },
+      h('button', { type: 'button', class: 'bba-btn bba-btn--primary', onclick: newCard }, '+ Новая карта'),
+      h('div', { class: 'bbc-search' }, search)));
+    append(main, gridWrap);
+    draw();
+  }
+
+  function newCard() {
+    var c = { id: rid('c'), tier: 'Платина', name: '', phone: '', note: '', created: Date.now(), log: [] };
+    var tier = h('input', { class: 'bba-in', type: 'text', list: 'bbc-tiers', maxlength: 30, value: c.tier });
+    var dl = h('datalist', { id: 'bbc-tiers' }, TIERS.map(function (t) { return h('option', { value: t }); }));
+    var name = h('input', { class: 'bba-in', type: 'text', maxlength: 80, placeholder: 'Имя Фамилия' });
+    var phone = h('input', { class: 'bba-in', type: 'tel', maxlength: 30, placeholder: '+371 …' });
+    var hrs = h('input', { class: 'bba-in', type: 'text', inputmode: 'decimal', placeholder: 'Напр. 10' });
+    var m;
+    var save = h('button', { type: 'button', class: 'bba-btn bba-btn--primary', onclick: guard(async function () {
+      var min = parseHours(hrs.value);
+      if (!name.value.trim()) { alert('Укажите имя и фамилию.'); return; }
+      if (!(min > 0)) { alert('Укажите, сколько часов на карте (число больше 0).'); return; }
+      c.tier = tier.value.trim() || 'Карта'; c.name = name.value.trim(); c.phone = phone.value.trim();
+      c.log.push({ id: rid('l'), ts: Date.now(), min: min, note: 'Покупка карты' });
+      cardsData.cards.unshift(c);
+      if (await saveCards()) { m.close(); renderTab(); } else { cardsData.cards.shift(); }
+    }) }, 'Создать карту');
+    m = modal('Новая карта', h('div', { class: 'bba-form' },
+      field('Тариф карты', tier), dl, field('Имя и фамилия', name), field('Телефон', phone), field('Часов на карте при покупке', hrs)),
+      [h('button', { type: 'button', class: 'bba-btn bba-btn--ghost', onclick: function () { m.close(); } }, 'Отмена'), save]);
+    name.focus();
+  }
+
+  function openCard(id) {
+    var c = cardsData.cards.filter(function (x) { return x.id === id; })[0];
+    if (!c) return;
+    var body = h('div', { class: 'bba-form' });
+    var m = modal('Карта клиента', body, [h('button', { type: 'button', class: 'bba-btn bba-btn--ghost', onclick: function () { m.close(); renderTab(); } }, 'Закрыть')]);
+    function commit(mutate) {
+      var snap = JSON.stringify(c);
+      mutate();
+      return saveCards().then(function (ok) {
+        if (!ok) { Object.keys(c).forEach(function (k) { delete c[k]; }); Object.assign(c, JSON.parse(snap)); }
+        draw();
+        return ok;
+      });
+    }
+    function addEntry(min, note) { return commit(function () { c.log.push({ id: rid('l'), ts: Date.now(), min: min, note: note || '' }); }); }
+    function draw() {
+      body.innerHTML = '';
+      var bal = balanceOf(c);
+      append(body, cardVisual(c));
+      var note = h('input', { class: 'bba-in', type: 'text', maxlength: 120, placeholder: 'Комментарий (необязательно), напр. «тренировка с Любомиром»' });
+      var amt = h('input', { class: 'bba-in bba-in--auto', type: 'text', inputmode: 'decimal', placeholder: 'часы', style: 'width:96px' });
+      function custom(sign) {
+        var min = parseHours(amt.value);
+        if (!(min > 0)) { alert('Введите число часов, например 1,5'); return; }
+        if (sign < 0 && min > bal && !confirm('На карте только ' + fmtH(bal) + ' ч. Списать ' + fmtH(min) + ' ч и уйти в минус?')) return;
+        addEntry(sign * min, note.value.trim() || (sign < 0 ? 'Списание' : 'Пополнение'));
+      }
+      append(body, h('section', { class: 'bba-group bbc-ops' },
+        h('h3', { class: 'bba-h', text: 'Списать часы после тренировки' }),
+        h('div', { class: 'bba-row' }, [1, 2, 3].map(function (n) {
+          return h('button', { type: 'button', class: 'bba-btn bba-btn--ghost', onclick: function () {
+            if (n * 60 > bal && !confirm('На карте только ' + fmtH(bal) + ' ч. Списать ' + n + ' ч и уйти в минус?')) return;
+            addEntry(-n * 60, note.value.trim() || 'Тренировка');
+          } }, '− ' + n + ' ч');
+        })),
+        h('div', { class: 'bba-row' }, amt,
+          h('button', { type: 'button', class: 'bba-btn bba-btn--primary', onclick: function () { custom(-1); } }, 'Списать'),
+          h('button', { type: 'button', class: 'bba-btn bba-btn--ghost', onclick: function () { custom(1); } }, '+ Пополнить')),
+        note));
+      var hist = h('ol', { class: 'bbc-log' });
+      var run = 0, rows = [];
+      (c.log || []).forEach(function (l) { run += l.min; rows.push({ l: l, after: run }); });
+      rows.reverse().forEach(function (r, idx) {
+        append(hist, h('li', { class: r.l.min < 0 ? 'is-out' : 'is-in' },
+          h('span', { class: 'bbc-log__d', text: fmtDate(r.l.ts) }),
+          h('span', { class: 'bbc-log__n', text: r.l.note || (r.l.min < 0 ? 'Списание' : 'Пополнение') }),
+          h('b', { text: (r.l.min > 0 ? '+' : '') + fmtH(r.l.min) + ' ч' }),
+          h('span', { class: 'bbc-log__a', text: 'остаток ' + fmtH(r.after) })));
+      });
+      append(body, h('section', { class: 'bba-group' },
+        h('div', { class: 'bba-row' }, h('h3', { class: 'bba-h', text: 'История' }), h('span', { class: 'bba-grow' }),
+          (c.log && c.log.length > 1) ? h('button', { type: 'button', class: 'bba-btn bba-btn--ghost bba-btn--sm', onclick: function () {
+            if (!confirm('Отменить последнюю операцию?')) return;
+            commit(function () { c.log.pop(); });
+          } }, 'Отменить последнюю') : null),
+        hist));
+      var tier = h('input', { class: 'bba-in', type: 'text', list: 'bbc-tiers', maxlength: 30, value: c.tier });
+      var dl = h('datalist', { id: 'bbc-tiers' }, TIERS.map(function (t) { return h('option', { value: t }); }));
+      var name = h('input', { class: 'bba-in', type: 'text', maxlength: 80, value: c.name });
+      var phone = h('input', { class: 'bba-in', type: 'tel', maxlength: 30, value: c.phone });
+      var cnote = h('textarea', { class: 'bba-in', rows: 2, maxlength: 400, placeholder: 'Заметка о клиенте (необязательно)' });
+      cnote.value = c.note || '';
+      append(body, h('section', { class: 'bba-group' },
+        h('h3', { class: 'bba-h', text: 'Данные клиента' }), dl,
+        field('Тариф', tier), field('Имя и фамилия', name), field('Телефон', phone), field('Заметка', cnote),
+        h('div', { class: 'bba-row bba-row--end' },
+          h('button', { type: 'button', class: 'bba-btn bba-btn--danger bba-btn--sm', onclick: function () {
+            if (!confirm('Удалить карту «' + (c.name || 'без имени') + '» вместе с историей?')) return;
+            var idx = cardsData.cards.indexOf(c), removed = cardsData.cards.splice(idx, 1)[0];
+            saveCards().then(function (ok) { if (ok) { m.close(); renderTab(); } else if (idx > -1) cardsData.cards.splice(idx, 0, removed); });
+          } }, 'Удалить карту'),
+          h('button', { type: 'button', class: 'bba-btn bba-btn--primary bba-btn--sm', onclick: function () {
+            if (!name.value.trim()) { alert('Имя не может быть пустым.'); return; }
+            commit(function () { c.tier = tier.value.trim() || 'Карта'; c.name = name.value.trim(); c.phone = phone.value.trim(); c.note = cnote.value; });
+          } }, 'Сохранить данные'))));
+    }
+    draw();
   }
 
   /* ---------- tab: settings ---------- */
