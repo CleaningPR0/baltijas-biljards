@@ -623,12 +623,23 @@
   }
   function balanceOf(c) { return (c.log || []).reduce(function (a, l) { return a + (l.min || 0); }, 0); }
   function fmtH(min) {
-    var neg = min < 0, v = Math.abs(min) / 60;
-    var t = (Math.round(v * 100) / 100).toString().replace('.', ',');
+    var neg = min < 0, v = Math.abs(Math.round(min)), hh = Math.floor(v / 60), mm = v % 60;
+    var t = hh && mm ? hh + ' ч ' + mm + ' мин' : hh ? hh + ' ч' : mm ? mm + ' мин' : '0 ч';
     return (neg ? '−' : '') + t;
   }
   function fmtDate(ts) { try { return new Date(ts).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } }
-  function parseHours(v) { var n = parseFloat(String(v).replace(',', '.')); return isFinite(n) ? Math.round(n * 60) : NaN; }
+  function parseHours(v) { // "2:43", "2ч 43м", "2 ч 43 мин", "1,5", "45 мин" -> minutes
+    v = String(v || '').trim().toLowerCase().replace(',', '.');
+    var m = /^(\d+):(\d{1,2})$/.exec(v);
+    if (m) return +m[1] * 60 + +m[2];
+    m = /^(\d+)\s*(?:м|m|мин\S*|min\S*)$/.exec(v);
+    if (m) return +m[1];
+    m = /^(?:(\d+(?:\.\d+)?)\s*(?:ч|h|час\S*|hours?|st\S*)?)?\s*(?:(\d+)\s*(?:м|m|мин\S*|min\S*)?)?$/.exec(v);
+    if (m && (m[1] || m[2])) {
+      return Math.round((+m[1] || 0) * 60 + (+m[2] || 0));
+    }
+    return NaN;
+  }
 
   function loadCards() {
     return api('/admin/cards').then(function (d) { cardsData = { rev: d.rev || 0, cards: d.cards || [] }; });
@@ -654,7 +665,7 @@
     var bal = balanceOf(c);
     return h('div', { class: 'bbc bbc--' + tierClass(c.tier) },
       h('div', { class: 'bbc__top' }, h('span', { class: 'bbc__tier', text: c.tier || 'Карта' }), h('span', { class: 'bbc__logo', text: 'Baltijas Biljards Nr.1' })),
-      h('div', { class: 'bbc__bal' }, h('b', { text: fmtH(bal) }), h('span', { text: 'ч осталось' })),
+      h('div', { class: 'bbc__bal' }, h('b', { text: fmtH(bal) }), h('span', { text: 'осталось' })),
       h('div', { class: 'bbc__bot' }, h('strong', { text: c.name || 'Без имени' }), h('span', { text: c.phone || '' })));
   }
   function renderCards(main) {
@@ -675,7 +686,7 @@
         return (c.name || '').toLowerCase().indexOf(q) > -1 || (c.tier || '').toLowerCase().indexOf(q) > -1 || (qd && (c.phone || '').replace(/\D/g, '').indexOf(qd) > -1);
       });
       var total = cardsData.cards.reduce(function (a, c) { return a + balanceOf(c); }, 0);
-      append(gridWrap, h('p', { class: 'bba-muted', text: 'Карт: ' + cardsData.cards.length + ' · всего часов на картах: ' + fmtH(total) }));
+      append(gridWrap, h('p', { class: 'bba-muted', text: 'Карт: ' + cardsData.cards.length + ' · всего на картах: ' + fmtH(total) }));
       if (!list.length) { append(gridWrap, h('p', { class: 'bba-empty', text: cardsData.cards.length ? 'Ничего не найдено.' : 'Карт пока нет. Нажмите «Новая карта».' })); return; }
       var grid = h('div', { class: 'bbc-grid' });
       list.forEach(function (c) {
@@ -701,19 +712,19 @@
     var dl = h('datalist', { id: 'bbc-tiers' }, TIERS.map(function (t) { return h('option', { value: t }); }));
     var name = h('input', { class: 'bba-in', type: 'text', maxlength: 80, placeholder: 'Имя Фамилия' });
     var phone = h('input', { class: 'bba-in', type: 'tel', maxlength: 30, placeholder: '+371 …' });
-    var hrs = h('input', { class: 'bba-in', type: 'text', inputmode: 'decimal', placeholder: 'Напр. 10' });
+    var hrs = h('input', { class: 'bba-in', type: 'text', inputmode: 'decimal', placeholder: 'Напр. 10 или 10 ч 30 мин' });
     var m;
     var save = h('button', { type: 'button', class: 'bba-btn bba-btn--primary', onclick: guard(async function () {
       var min = parseHours(hrs.value);
       if (!name.value.trim()) { alert('Укажите имя и фамилию.'); return; }
-      if (!(min > 0)) { alert('Укажите, сколько часов на карте (число больше 0).'); return; }
+      if (!(min > 0)) { alert('Укажите время на карте, например 10 или 10 ч 30 мин.'); return; }
       c.tier = tier.value.trim() || 'Карта'; c.name = name.value.trim(); c.phone = phone.value.trim();
       c.log.push({ id: rid('l'), ts: Date.now(), min: min, note: 'Покупка карты' });
       cardsData.cards.unshift(c);
       if (await saveCards()) { m.close(); renderTab(); } else { cardsData.cards.shift(); }
     }) }, 'Создать карту');
     m = modal('Новая карта', h('div', { class: 'bba-form' },
-      field('Тариф карты', tier), dl, field('Имя и фамилия', name), field('Телефон', phone), field('Часов на карте при покупке', hrs)),
+      field('Тариф карты', tier), dl, field('Имя и фамилия', name), field('Телефон', phone), field('Время на карте при покупке', hrs)),
       [h('button', { type: 'button', class: 'bba-btn bba-btn--ghost', onclick: function () { m.close(); } }, 'Отмена'), save]);
     name.focus();
   }
@@ -738,24 +749,24 @@
       var bal = balanceOf(c);
       append(body, cardVisual(c));
       var note = h('input', { class: 'bba-in', type: 'text', maxlength: 120, placeholder: 'Комментарий (необязательно), напр. «тренировка с Любомиром»' });
-      var amt = h('input', { class: 'bba-in bba-in--auto', type: 'text', inputmode: 'decimal', placeholder: 'часы', style: 'width:96px' });
+      var hh = h('input', { class: 'bba-in bba-in--auto', type: 'number', min: 0, max: 999, inputmode: 'numeric', placeholder: '0', style: 'width:78px' });
+      var mi = h('input', { class: 'bba-in bba-in--auto', type: 'number', min: 0, max: 59, inputmode: 'numeric', placeholder: '0', style: 'width:78px' });
       function custom(sign) {
-        var min = parseHours(amt.value);
-        if (!(min > 0)) { alert('Введите число часов, например 1,5'); return; }
-        if (sign < 0 && min > bal && !confirm('На карте только ' + fmtH(bal) + ' ч. Списать ' + fmtH(min) + ' ч и уйти в минус?')) return;
-        addEntry(sign * min, note.value.trim() || (sign < 0 ? 'Списание' : 'Пополнение'));
+        var min = (parseInt(hh.value, 10) || 0) * 60 + (parseInt(mi.value, 10) || 0);
+        if (!(min > 0)) { alert('Введите время: часы и/или минуты, например 2 ч 43 мин.'); return; }
+        if (sign < 0 && min > bal && !confirm('На карте только ' + fmtH(bal) + '. Списать ' + fmtH(min) + ' и уйти в минус?')) return;
+        addEntry(sign * min, note.value.trim() || (sign < 0 ? 'Тренировка' : 'Пополнение'));
       }
       append(body, h('section', { class: 'bba-group bbc-ops' },
-        h('h3', { class: 'bba-h', text: 'Списать часы после тренировки' }),
-        h('div', { class: 'bba-row' }, [1, 2, 3].map(function (n) {
-          return h('button', { type: 'button', class: 'bba-btn bba-btn--ghost', onclick: function () {
-            if (n * 60 > bal && !confirm('На карте только ' + fmtH(bal) + ' ч. Списать ' + n + ' ч и уйти в минус?')) return;
-            addEntry(-n * 60, note.value.trim() || 'Тренировка');
-          } }, '− ' + n + ' ч');
-        })),
-        h('div', { class: 'bba-row' }, amt,
+        h('h3', { class: 'bba-h', text: 'Списать время после игры' }),
+        h('div', { class: 'bba-row bbc-time' }, hh, h('span', { text: 'ч' }), mi, h('span', { text: 'мин' }),
           h('button', { type: 'button', class: 'bba-btn bba-btn--primary', onclick: function () { custom(-1); } }, 'Списать'),
           h('button', { type: 'button', class: 'bba-btn bba-btn--ghost', onclick: function () { custom(1); } }, '+ Пополнить')),
+        h('div', { class: 'bba-row' }, [['1 ч', 60], ['1 ч 30 мин', 90], ['2 ч', 120], ['3 ч', 180]].map(function (q) {
+          return h('button', { type: 'button', class: 'bba-btn bba-btn--ghost bba-btn--sm', onclick: function () {
+            var t = q[1], parts = [Math.floor(t / 60), t % 60]; hh.value = parts[0] || ''; mi.value = parts[1] || '';
+          } }, q[0]);
+        })),
         note));
       var hist = h('ol', { class: 'bbc-log' });
       var run = 0, rows = [];
@@ -764,7 +775,7 @@
         append(hist, h('li', { class: r.l.min < 0 ? 'is-out' : 'is-in' },
           h('span', { class: 'bbc-log__d', text: fmtDate(r.l.ts) }),
           h('span', { class: 'bbc-log__n', text: r.l.note || (r.l.min < 0 ? 'Списание' : 'Пополнение') }),
-          h('b', { text: (r.l.min > 0 ? '+' : '') + fmtH(r.l.min) + ' ч' }),
+          h('b', { text: (r.l.min > 0 ? '+' : '') + fmtH(r.l.min) }),
           h('span', { class: 'bbc-log__a', text: 'остаток ' + fmtH(r.after) })));
       });
       append(body, h('section', { class: 'bba-group' },
