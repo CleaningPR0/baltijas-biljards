@@ -9,21 +9,30 @@ const dec = (s) => String(s || '')
   .replace(/&quot;/g, '"').replace(/&apos;|&#0?39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&')
   .replace(/\s+/g, ' ').trim();
 
+// "25<br>ноя<br>ср" | "28-29<br>ноя<br>сб" | "25.11<br>1.12"  ->  { date, end } (ISO, year guessed nearest to now)
 function pickDate(timeHtml, now) {
   const parts = String(timeHtml || '').split(/<br\s*\/?>/i).map((x) => dec(x));
-  let d, m;
-  const a = /^(\d{1,2})(?:-\d{1,2})?$/.exec(parts[0] || '');
-  if (a && MONTHS[(parts[1] || '').slice(0, 3).toLowerCase()]) { d = +a[1]; m = MONTHS[parts[1].slice(0, 3).toLowerCase()]; }
-  else { const b = /^(\d{1,2})\.(\d{1,2})$/.exec(parts[0] || ''); if (b) { d = +b[1]; m = +b[2]; } }
-  if (!d || !m) return '';
+  let d, m, d2 = 0, m2 = 0;
+  const a = /^(\d{1,2})(?:-(\d{1,2}))?$/.exec(parts[0] || '');
+  if (a && MONTHS[(parts[1] || '').slice(0, 3).toLowerCase()]) { d = +a[1]; m = MONTHS[parts[1].slice(0, 3).toLowerCase()]; if (a[2]) { d2 = +a[2]; m2 = m; } }
+  else {
+    const b = /^(\d{1,2})\.(\d{1,2})$/.exec(parts[0] || '');
+    if (b) { d = +b[1]; m = +b[2]; const c = /^(\d{1,2})\.(\d{1,2})$/.exec(parts[1] || ''); if (c) { d2 = +c[1]; m2 = +c[2]; } }
+  }
+  if (!d || !m) return { date: '', end: '' };
   const y0 = new Date(now).getUTCFullYear();
-  let best = '', bd = Infinity;
+  let best = null, bd = Infinity;
   for (const y of [y0 - 1, y0, y0 + 1]) {
     const t = Date.UTC(y, m - 1, d, 12);
     if (new Date(t).getUTCMonth() !== m - 1) continue;
-    if (Math.abs(t - now) < bd) { bd = Math.abs(t - now); best = new Date(t).toISOString().slice(0, 10); }
+    if (Math.abs(t - now) < bd) { bd = Math.abs(t - now); best = y; }
   }
-  return best;
+  if (best == null) return { date: '', end: '' };
+  const iso = (y, mm, dd) => new Date(Date.UTC(y, mm - 1, dd, 12)).toISOString().slice(0, 10);
+  const date = iso(best, m, d);
+  let end = '';
+  if (d2 && m2) { end = iso(m2 < m ? best + 1 : best, m2, d2); if (end <= date) end = ''; }
+  return { date, end };
 }
 
 // -> [{ tsId, date, time, title, link, count, disc }]  (only this club's tournaments)
@@ -37,9 +46,10 @@ export function parseTS(html, now = Date.now()) {
     const t = /<time[^>]*>([\s\S]*?)<\/time>/.exec(row);
     const c = /<em class="evt-\w+"><span>(\d*)/.exec(row);
     const title = dec(a[3]);
+    const dt = pickDate(t && t[1], now);
     const tm = /\b([01]?\d|2[0-3]):([0-5]\d)\b/.exec(title);
     out.push({
-      tsId: a[2], date: pickDate(t && t[1], now), time: tm ? tm[1].padStart(2, '0') + ':' + tm[2] : '',
+      tsId: a[2], date: dt.date, end: dt.end, time: tm ? tm[1].padStart(2, '0') + ':' + tm[2] : '',
       title, link: BASE + a[1], count: c && c[1] ? +c[1] : 0, disc: dec(v[2]),
     });
   }
@@ -71,7 +81,7 @@ export async function refreshTS(prev, now = Date.now()) {
   for (const r of ru) {
     seen.add(r.tsId);
     map.set(r.tsId, {
-      tsId: r.tsId, date: r.date, time: r.time, title: clip(r.title, 160), link: r.link, count: r.count,
+      tsId: r.tsId, date: r.date, end: r.end, time: r.time, title: clip(r.title, 160), link: r.link, count: r.count,
       disc: { ru: clip(r.disc, 60), lv: clip(disc.lv[r.tsId] || r.disc, 60), en: clip(disc.en[r.tsId] || r.disc, 60) },
     });
   }
