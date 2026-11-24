@@ -140,6 +140,19 @@ export function sanitize(input) {
   return out;
 }
 
+// ---- club cards (PRIVATE: stored under its own key, never served by the public /content endpoint)
+const num = (v, lo, hi) => { v = Math.round(Number(v)); return Number.isFinite(v) ? Math.max(lo, Math.min(hi, v)) : 0; };
+export function sanitizeCards(input) {
+  const list = Array.isArray(input?.cards) ? input.cards : [];
+  return list.slice(0, 1000).map((c) => ({
+    id: idOf(c?.id), tier: clean(c?.tier, 30), name: clean(c?.name, 80), phone: clean(c?.phone, 30), note: clean(c?.note, 400),
+    created: num(c?.created, 0, 4e12),
+    log: (Array.isArray(c?.log) ? c.log : []).slice(-400).map((l) => ({
+      id: idOf(l?.id), ts: num(l?.ts, 0, 4e12), min: num(l?.min, -100000, 100000), note: clean(l?.note, 120),
+    })),
+  }));
+}
+
 // ---------------------------------------------------------------- request handler
 // store: { getJSON(key), setJSON(key,obj), putBlob(id,bytes,type), getBlob(id)->{data,contentType}|null, delBlob(id) }
 export async function handle(req, { store, env = {} }) {
@@ -193,6 +206,21 @@ export async function handle(req, { store, env = {} }) {
         const next = { ...sanitize(body), rev: cur.rev + 1, updated: Date.now() };
         await store.setJSON('content', next);
         return J({ ok: true, rev: next.rev, content: next });
+      }
+
+      if (m === 'GET' && p === '/admin/cards') {
+        return J((await store.getJSON('cards')) || { rev: 0, cards: [] });
+      }
+      if (m === 'PUT' && p === '/admin/cards') {
+        const text = await req.text();
+        if (text.length > 1_500_000) return J({ error: 'too_large' }, 413);
+        let body;
+        try { body = JSON.parse(text); } catch { return J({ error: 'bad_json' }, 400); }
+        const cur = (await store.getJSON('cards')) || { rev: 0, cards: [] };
+        if (Number(body.rev) !== cur.rev) return J({ error: 'conflict', rev: cur.rev }, 409);
+        const next = { rev: cur.rev + 1, updated: Date.now(), cards: sanitizeCards(body) };
+        await store.setJSON('cards', next);
+        return J({ ok: true, rev: next.rev, cards: next.cards });
       }
 
       if (m === 'POST' && p === '/admin/upload') {
