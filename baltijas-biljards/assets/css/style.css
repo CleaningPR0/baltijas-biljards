@@ -816,3 +816,8 @@ a.trow__a:hover .trow__go, a.trow__a:focus-visible .trow__go, button.trow__a:hov
 .trow--live { background: linear-gradient(90deg, rgba(201, 164, 92, .08), transparent 70%); }
 @media (max-width: 760px) { .trow__d b { font-size: 1.45rem; } .trow__a { grid-template-columns: 76px minmax(0, 1fr) 36px; gap: 12px; padding: 14px 0; } .trow__go { width: 36px; height: 36px; } .trow__body { padding-left: 0; } }
 @media (prefers-reduced-motion: reduce) { .trow__live::before { animation: none; } .trow__go { transition: none; } }
+
+/* v30: product photos — no white box; any photo fits whole on a blurred, darkened copy of itself */
+.pcard__img { background: #0e1a13; isolation: isolate; box-shadow: inset 0 0 0 1px rgba(241, 234, 215, .08); }
+.pcard__img::before { content: ""; position: absolute; inset: -12%; z-index: -1; background: var(--bg, none) center / cover no-repeat; filter: blur(26px) brightness(.55) saturate(1.2); }
+.pcard__ph > img { object-fit: contain; padding: 0; }
