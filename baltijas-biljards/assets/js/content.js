@@ -239,12 +239,9 @@
     var used = {};
     manual.forEach(function (t) { var m = /=(\d+)\s*$/.exec(t.link || ''); if (m) used[m[1]] = 1; });
     return tsItems.filter(function (a) { return a && a.tsId && !used[a.tsId]; }).map(function (a) {
-      var info = {};
-      ['lv', 'ru', 'en'].forEach(function (l) {
-        var d = a.disc && (a.disc[l] || a.disc.ru);
-        info[l] = [d ? trl('tour.auto.disc', l) + ': ' + d : '', a.count ? trl('tour.auto.cnt', l) + ': ' + a.count : ''].filter(Boolean).join('\n');
-      });
-      return { id: 'ts' + a.tsId, date: a.date || '', time: a.time || '', title: { lv: a.title, ru: a.title, en: a.title }, info: info, link: a.link, auto: true };
+      var d = a.disc || {};
+      return { id: 'ts' + a.tsId, date: a.date || '', end: a.end || '', time: a.time || '', title: { lv: a.title, ru: a.title, en: a.title }, info: null, link: a.link, auto: true,
+        metaDisc: (d[BB.lang] || d.ru || ''), metaCnt: a.count ? a.count + ' ' + trl('tour.auto.cnt', BB.lang).toLowerCase() : '' };
     });
   }
   function tsLoad() {
@@ -255,45 +252,77 @@
       .then(function (d) { if (d && Array.isArray(d.items)) { tsItems = d.items; renderTournaments(); } })
       .catch(function () { /* manual list stays */ });
   }
+  var pastOpen = false, PAST_N = 6;
+  function dayRange(t, l) {
+    var d = parseDate(t.date), e = parseDate(t.end);
+    if (!d) return '<b>•</b>';
+    var mon = function (x) { return esc(x.toLocaleDateString(LOC[l] || 'lv-LV', { month: 'short' }).replace('.', '')); };
+    if (e && e > d) {
+      var same = e.getMonth() === d.getMonth();
+      return '<b>' + d.getDate() + '–' + e.getDate() + '</b><small>' + (same ? mon(d) : mon(d) + '–' + mon(e)) + '</small>';
+    }
+    return '<b>' + d.getDate() + '</b><small>' + mon(d) + '</small>';
+  }
   function renderTournaments() {
     var box = document.getElementById('tournaments');
     if (!box) return;
     var manual = BB.content && Array.isArray(BB.content.tournaments) ? BB.content.tournaments : [];
     var list = manual.concat(autoTournaments(manual));
-    var today = new Date(); today.setHours(0, 0, 0, 0);
-    var isPast = function (t) { var d = parseDate(t.date); return !!d && d < today; };
-    var up = list.filter(function (t) { return !isPast(t); }).sort(function (a, b) { return (a.date || '9999') < (b.date || '9999') ? -1 : 1; });
-    var past = list.filter(isPast).sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+    var today = new Date(); today.setHours(12, 0, 0, 0); // parseDate() is noon-based
+    var live = [], soon = [], past = [];
+    list.forEach(function (t) {
+      var d = parseDate(t.date), e = parseDate(t.end) || d;
+      if (!d) soon.push(t); else if (e < today) past.push(t); else if (d <= today) live.push(t); else soon.push(t);
+    });
+    var byDate = function (dir) { return function (a, b) { return ((a.date || '9999') < (b.date || '9999') ? -1 : 1) * dir; }; };
+    live.sort(byDate(1)); soon.sort(byDate(1)); past.sort(byDate(-1));
+
+    function row(t, n, kind) {
+      var link = safeLink(t.link), info = pick(t.info, BB.lang), id = 'tour-' + (t.id || n);
+      var meta = [t.time, t.metaDisc, t.metaCnt].filter(Boolean).join(' · ');
+      var inner = '<span class="trow__d">' + dayRange(t, BB.lang) + '</span>' +
+        '<span class="trow__m">' +
+          (meta || kind === 'live' ? '<span class="trow__meta">' + (kind === 'live' ? '<i class="trow__live">' + esc(tr('tour.live')) + '</i>' : '') + esc(meta) + '</span>' : '') +
+          '<span class="trow__t">' + esc(pick(t.title, BB.lang)) + '</span>' +
+        '</span>';
+      var excerpt = info ? '<span class="trow__x">' + esc(info.replace(/^\s*[-•]\s*/gm, '').replace(/\s*\n+\s*/g, ' · ')) + '</span>' : '';
+      var cls = 'trow' + (kind === 'past' ? ' trow--past' : '') + (kind === 'live' ? ' trow--live' : '');
+      if (link) {
+        return '<li class="' + cls + '"><a class="trow__a" href="' + esc(link) + '" target="_blank" rel="noopener" aria-label="' + esc(pick(t.title, BB.lang) + ' — TournamentService') + '">' +
+          inner.replace('</span></span>', excerpt + '</span></span>') + '<span class="trow__go" aria-hidden="true">' + EXT + '</span></a></li>';
+      }
+      if (info) {
+        var open = !!openTour[id];
+        return '<li class="' + cls + (open ? ' is-open' : '') + '" data-tid="' + esc(id) + '"><button type="button" class="trow__a" aria-expanded="' + open + '">' + inner +
+          '<span class="trow__go trow__go--plus" aria-hidden="true"></span></button><div class="trow__body"><div class="line__info">' + bodyHtml(info) + '</div></div></li>';
+      }
+      return '<li class="' + cls + '"><div class="trow__a">' + inner + '</div></li>';
+    }
+    function sec(key, arr, kind, limit) {
+      if (!arr.length) return '';
+      var shown = limit && !pastOpen ? arr.slice(0, limit) : arr;
+      return '<li class="tsec" role="presentation"><h2 class="tsec__h">' + esc(tr(key)) + '<span>' + arr.length + '</span></h2></li>' +
+        shown.map(function (t, n) { return row(t, n, kind); }).join('') +
+        (limit && arr.length > limit ? '<li class="tsec__more"><button type="button" class="btn btn--ghost btn--sm" data-past-toggle>' + esc(tr(pastOpen ? 'tour.showless' : 'tour.showmore')) + (pastOpen ? '' : ' (' + (arr.length - limit) + ')') + '</button></li>' : '');
+    }
     var empty = document.getElementById('tournaments-empty');
-    if (!up.length && !past.length) {
+    if (!list.length) {
       box.innerHTML = '';
       if (!empty) { empty = document.createElement('p'); empty.id = 'tournaments-empty'; empty.className = 'note'; box.parentNode.insertBefore(empty, box.nextSibling); }
       empty.setAttribute('data-i18n', 'tour.empty'); empty.textContent = tr('tour.empty');
       return;
     }
     if (empty) empty.remove();
-    box.innerHTML = up.concat(past).map(function (t, n) {
-      var d = parseDate(t.date), gone = isPast(t), link = safeLink(t.link), info = pick(t.info, BB.lang);
-      var id = 'tour-' + (t.id || n), open = !!openTour[id];
-      var big = d ? '<b>' + d.getDate() + '</b><small>' + esc(d.toLocaleDateString(LOC[BB.lang] || 'lv-LV', { month: 'short' }).replace('.', '')) + '</small>' : '<b>•</b>';
-      var body = (info ? '<div class="line__info">' + bodyHtml(info) + '</div>' : '') +
-        (link ? '<p class="line__act"><a class="btn btn--primary btn--sm" href="' + esc(link) + '" target="_blank" rel="noopener">' + esc(tr(gone && /standing=/.test(link) ? 'tour.results' : 'tour.register')) + EXT + '</a></p>' : '');
-      return '<li class="line tour' + (gone ? ' line--past' : '') + (open ? ' is-open' : '') + ' reveal is-in" data-tid="' + esc(id) + '">' +
-        '<h2 class="h3 tour__h"><button type="button" class="tour__head" aria-expanded="' + open + '"' + (body ? ' aria-controls="' + esc(id) + '"' : '') + '>' +
-        '<span class="line__n line__n--date">' + big + '</span>' +
-        '<span class="tour__main"><span class="chip">' + esc([gone ? tr('tour.past') : '', d ? d.getFullYear() : '', t.time].filter(Boolean).join(' · ')) + '</span>' +
-        '<span class="tour__title">' + esc(pick(t.title, BB.lang)) + '</span>' +
-        (body ? '<span class="tour__more">' + esc(tr('tour.more')) + '</span>' : '') + '</span>' +
-        (body ? '<span class="tour__plus" aria-hidden="true"></span>' : '') + '</button></h2>' +
-        (body ? '<div class="tour__body" id="' + esc(id) + '"><div class="tour__inner">' + body + '</div></div>' : '') +
-        '</li>';
-    }).join('');
+    box.innerHTML = sec('tour.sec.live', live, 'live') + sec('tour.sec.soon', soon, 'soon') +
+      ((!live.length && !soon.length) ? '<li class="tsec__none note">' + esc(tr('tour.empty')) + '</li>' : '') +
+      sec('tour.sec.past', past, 'past', PAST_N);
     if (!box.getAttribute('data-bound')) {
       box.setAttribute('data-bound', '1');
       box.addEventListener('click', function (e) {
-        var btn = e.target.closest ? e.target.closest('.tour__head') : null; if (!btn) return;
-        var li = btn.closest('.tour'); if (!li || !li.querySelector('.tour__body')) return;
-        var on = !li.classList.contains('is-open');
+        var tg = e.target.closest ? e.target.closest('[data-past-toggle]') : null;
+        if (tg) { pastOpen = !pastOpen; renderTournaments(); return; }
+        var btn = e.target.closest ? e.target.closest('button.trow__a') : null; if (!btn) return;
+        var li = btn.closest('.trow'), on = !li.classList.contains('is-open');
         li.classList.toggle('is-open', on); btn.setAttribute('aria-expanded', String(on));
         openTour[li.getAttribute('data-tid')] = on;
       });
