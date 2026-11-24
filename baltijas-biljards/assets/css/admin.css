@@ -116,7 +116,7 @@ textarea.bba-in { resize: vertical; }
 .bbc__tier { font-weight: 800; font-size: 1.05rem; letter-spacing: .06em; text-transform: uppercase; }
 .bbc__logo { font-size: .66rem; opacity: .7; font-weight: 600; }
 .bbc__bal { display: flex; align-items: baseline; gap: 8px; }
-.bbc__bal b { font-size: 2.6rem; line-height: 1; font-weight: 800; letter-spacing: -.02em; }
+.bbc__bal b { font-size: 2rem; line-height: 1; font-weight: 800; letter-spacing: -.02em; }
 .bbc__bal span { font-size: .85rem; opacity: .75; }
 .bbc__bot { display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; font-size: .85rem; }
 .bbc__bot strong { font-weight: 700; font-size: .95rem; }
@@ -131,3 +131,5 @@ textarea.bba-in { resize: vertical; }
 .bbc-log__d, .bbc-log__a { color: #6e6e73; font-size: .75rem; }
 @media (max-width: 520px) { .bbc-log li { grid-template-columns: 1fr auto; } .bbc-log__d, .bbc-log__a { grid-column: 1 / -1; } }
 .bba-modal h2, .bba-modal .bba-h, .bba-modal .bba-field span { color: #1d1d1f; }
+.bbc-time { align-items: center; flex-wrap: wrap; }
+.bbc-time > span { color: #6e6e73; font-size: .9rem; }
