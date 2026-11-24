@@ -568,7 +568,7 @@
   function renderTournaments(main) {
     var list = ensureList('tournaments');
     append(main, h('h2', { class: 'bba-h1', text: 'Турниры' }));
-    append(main, h('p', { class: 'bba-hint', text: 'Каждый турнир показывается на странице «Turnīri»: дата, положение о турнире и кнопка «Регистрация» со ссылкой на TournamentService. Прошедшие турниры автоматически уходят вниз и тускнеют.' }));
+    append(main, h('p', { class: 'bba-hint', text: 'Каждый турнир показывается на странице «Turnīri»: дата, положение о турнире и кнопка «Регистрация» со ссылкой на TournamentService. Прошедшие турниры автоматически уходят вниз и тускнеют. Турниры клуба с TournamentService (место «BALTIJAS BILJARDS Nr.1») добавляются на сайт сами, раз в час, — здесь их вводить не нужно. Чтобы дописать положение к такому турниру, создайте его здесь и вставьте ту же ссылку на TournamentService: тогда вместо автоматической карточки покажется ваша.' }));
     append(main, h('div', { class: 'bba-bar' }, h('button', { type: 'button', class: 'bba-btn bba-btn--primary', onclick: function () {
       list.unshift({ id: rid('t'), date: '', time: '', title: E3(), info: E3(), link: '' });
       scheduleSave(); renderTab();

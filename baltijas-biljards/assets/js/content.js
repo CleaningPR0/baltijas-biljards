@@ -232,11 +232,34 @@
   }
 
   /* ---------- tournaments ---------- */
-  var openTour = {};
+  var openTour = {}, tsItems = [], tsAsked = false;
+  function trl(key, l) { var d = I18N[l] || {}; return d[key] != null ? d[key] : ''; }
+  // tournaments mirrored from TournamentService; a tournament added by hand in the admin with the same link replaces its auto copy
+  function autoTournaments(manual) {
+    var used = {};
+    manual.forEach(function (t) { var m = /=(\d+)\s*$/.exec(t.link || ''); if (m) used[m[1]] = 1; });
+    return tsItems.filter(function (a) { return a && a.tsId && !used[a.tsId]; }).map(function (a) {
+      var info = {};
+      ['lv', 'ru', 'en'].forEach(function (l) {
+        var d = a.disc && (a.disc[l] || a.disc.ru);
+        info[l] = [d ? trl('tour.auto.disc', l) + ': ' + d : '', a.count ? trl('tour.auto.cnt', l) + ': ' + a.count : ''].filter(Boolean).join('\n');
+      });
+      return { id: 'ts' + a.tsId, date: a.date || '', time: a.time || '', title: { lv: a.title, ru: a.title, en: a.title }, info: info, link: a.link, auto: true };
+    });
+  }
+  function tsLoad() {
+    if (tsAsked || !document.getElementById('tournaments') || !window.fetch || !/^https?:$/.test(location.protocol)) return;
+    tsAsked = true;
+    fetch('/api/ts', { headers: { accept: 'application/json' } })
+      .then(function (r) { return r.ok && /json/.test(r.headers.get('content-type') || '') ? r.json() : null; })
+      .then(function (d) { if (d && Array.isArray(d.items)) { tsItems = d.items; renderTournaments(); } })
+      .catch(function () { /* manual list stays */ });
+  }
   function renderTournaments() {
     var box = document.getElementById('tournaments');
-    var list = BB.content && BB.content.tournaments;
-    if (!box || !Array.isArray(list)) return;
+    if (!box) return;
+    var manual = BB.content && Array.isArray(BB.content.tournaments) ? BB.content.tournaments : [];
+    var list = manual.concat(autoTournaments(manual));
     var today = new Date(); today.setHours(0, 0, 0, 0);
     var isPast = function (t) { var d = parseDate(t.date); return !!d && d < today; };
     var up = list.filter(function (t) { return !isPast(t); }).sort(function (a, b) { return (a.date || '9999') < (b.date || '9999') ? -1 : 1; });
@@ -254,7 +277,7 @@
       var id = 'tour-' + (t.id || n), open = !!openTour[id];
       var big = d ? '<b>' + d.getDate() + '</b><small>' + esc(d.toLocaleDateString(LOC[BB.lang] || 'lv-LV', { month: 'short' }).replace('.', '')) + '</small>' : '<b>•</b>';
       var body = (info ? '<div class="line__info">' + bodyHtml(info) + '</div>' : '') +
-        (link ? '<p class="line__act"><a class="btn btn--primary btn--sm" href="' + esc(link) + '" target="_blank" rel="noopener">' + esc(tr('tour.register')) + EXT + '</a></p>' : '');
+        (link ? '<p class="line__act"><a class="btn btn--primary btn--sm" href="' + esc(link) + '" target="_blank" rel="noopener">' + esc(tr(gone && /standing=/.test(link) ? 'tour.results' : 'tour.register')) + EXT + '</a></p>' : '');
       return '<li class="line tour' + (gone ? ' line--past' : '') + (open ? ' is-open' : '') + ' reveal is-in" data-tid="' + esc(id) + '">' +
         '<h2 class="h3 tour__h"><button type="button" class="tour__head" aria-expanded="' + open + '"' + (body ? ' aria-controls="' + esc(id) + '"' : '') + '>' +
         '<span class="line__n line__n--date">' + big + '</span>' +
@@ -326,6 +349,7 @@
   };
 
   if (!/^https?:$/.test(location.protocol) || !window.fetch) return;
+  tsLoad();
   fetch('/api/content', { headers: { accept: 'application/json' }, cache: 'no-cache' })
     .then(function (r) { return r.ok && /json/.test(r.headers.get('content-type') || '') ? r.json() : null; })
     .then(function (c) { if (c && typeof c === 'object') BB.apply(c); })
